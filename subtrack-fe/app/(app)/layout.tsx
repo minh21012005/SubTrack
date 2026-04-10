@@ -1,12 +1,30 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import Sidebar from '@/components/layout/Sidebar';
 import NotificationBell from '@/components/layout/NotificationBell';
-import { Menu } from 'lucide-react';
+import { Menu, Loader2 } from 'lucide-react';
+import { useAuth } from '@/lib/context/AuthContext';
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const { isInitializing, isLoggedIn } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!isInitializing && !isLoggedIn) {
+      router.push('/login');
+    }
+  }, [isInitializing, isLoggedIn, router]);
+
+  if (isInitializing || !isLoggedIn) {
+    return (
+      <div style={{ display: 'flex', height: '100vh', alignItems: 'center', justifyContent: 'center', backgroundColor: 'var(--bg-primary)' }}>
+        <Loader2 size={32} className="animate-spin text-primary" color="var(--primary)" />
+      </div>
+    );
+  }
 
   return (
     <div className="page-wrapper">

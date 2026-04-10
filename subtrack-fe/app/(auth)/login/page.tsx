@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Eye, EyeOff, TrendingUp, Loader2 } from 'lucide-react';
+import { Eye, EyeOff, Loader2 } from 'lucide-react';
 import { authApi } from '@/lib/services';
 import { saveAuth } from '@/lib/utils';
 import { useAuth } from '@/lib/context/AuthContext';
@@ -42,14 +42,13 @@ export default function LoginPage() {
       <div className="auth-card">
         {/* Logo */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 36 }}>
-          <div style={{
-            width: 44, height: 44,
-            background: 'linear-gradient(135deg, var(--primary), #a78bfa)',
-            borderRadius: 12,
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-          }}>
-            <TrendingUp size={22} color="white" />
-          </div>
+          <img 
+            src="/image.jpg" 
+            alt="SubTrack Logo" 
+            width={44} 
+            height={44} 
+            style={{ borderRadius: 12, border: '1px solid var(--border)', objectFit: 'cover' }} 
+          />
           <div>
             <div style={{ fontWeight: 900, fontSize: '1.3rem', color: 'var(--text-primary)' }}>SubTrack</div>
             <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Phát hiện lãng phí subscription</div>

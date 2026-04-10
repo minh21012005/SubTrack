@@ -55,6 +55,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     setUser(null);
     localStorage.removeItem('subtrack_token');
     localStorage.removeItem('subtrack_user');
+    document.cookie = 'subtrack_token=; path=/; max-age=0; expires=Thu, 01 Jan 1970 00:00:00 GMT';
     router.push('/login');
   };
 

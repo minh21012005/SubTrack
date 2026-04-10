@@ -55,4 +55,11 @@ public class EmailService {
             log.error("Unexpected error while sending HTML email to {}: {}", to, e.getMessage());
         }
     }
+
+    @Async
+    public void sendOtpEmailAsync(String to, String otpCode) {
+        Context context = new Context();
+        context.setVariable("otpCode", otpCode);
+        sendHtmlEmailAsync(to, "SubTrack - Mã Xác Thực Đăng Ký (OTP)", "otp-email.html", context);
+    }
 }

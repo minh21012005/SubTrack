@@ -22,6 +22,12 @@ public class AuthController {
 
     private final AuthService authService;
 
+    @PostMapping("/send-otp")
+    public ResponseEntity<ApiResponse<Void>> sendOtp(@Valid @RequestBody com.subtrack.dto.request.OtpRequest request) {
+        authService.sendOtp(request);
+        return ResponseEntity.ok(ApiResponse.ok("Mã xác thực đã được gửi đến email", null));
+    }
+
     @PostMapping("/register")
     public ResponseEntity<ApiResponse<AuthResponse>> register(@Valid @RequestBody RegisterRequest request) {
         AuthResponse response = authService.register(request);

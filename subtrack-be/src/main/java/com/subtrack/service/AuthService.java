@@ -8,6 +8,9 @@ import com.subtrack.dto.response.UserResponse;
 import com.subtrack.entity.User;
 import com.subtrack.enums.PlanType;
 import com.subtrack.exception.BadRequestException;
+import com.subtrack.dto.request.OtpRequest;
+import com.subtrack.entity.OtpToken;
+import com.subtrack.repository.OtpTokenRepository;
 import com.subtrack.exception.ConflictException;
 import com.subtrack.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -27,12 +30,63 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
+    private final OtpTokenRepository otpTokenRepository;
+    private final EmailService emailService;
+
+    @Transactional
+    public void sendOtp(OtpRequest request) {
+        if (userRepository.existsByEmail(request.getEmail())) {
+            throw new ConflictException("Email đã được sử dụng: " + request.getEmail());
+        }
+
+        // Spam Protection: Tối đa 3 lần / 5 phút
+        int recentSends = otpTokenRepository.countByEmailAndCreatedAtAfter(
+                request.getEmail(), 
+                java.time.OffsetDateTime.now().minusMinutes(5)
+        );
+
+        if (recentSends >= 3) {
+            throw new BadRequestException("Bạn đã yêu cầu gửi mã quá nhiều lần. Vui lòng thử lại sau 5 phút.");
+        }
+
+        // Generate 6 digit OTP
+        String otpCode = String.format("%06d", new java.util.Random().nextInt(999999));
+
+        OtpToken otpToken = OtpToken.builder()
+                .email(request.getEmail())
+                .otp(otpCode)
+                .expiresAt(java.time.OffsetDateTime.now().plusMinutes(5))
+                .isUsed(false)
+                .build();
+        otpTokenRepository.save(otpToken);
+
+        emailService.sendOtpEmailAsync(request.getEmail(), otpCode);
+    }
 
     @Transactional
     public AuthResponse register(RegisterRequest request) {
         if (userRepository.existsByEmail(request.getEmail())) {
             throw new ConflictException("Email đã được sử dụng: " + request.getEmail());
         }
+
+        // Verify OTP
+        OtpToken otpToken = otpTokenRepository.findTopByEmailOrderByCreatedAtDesc(request.getEmail())
+                .orElseThrow(() -> new BadRequestException("Chưa gửi OTP cho email này"));
+
+        if (otpToken.isUsed()) {
+            throw new BadRequestException("Mã OTP này đã được sử dụng");
+        }
+
+        if (otpToken.getExpiresAt().isBefore(java.time.OffsetDateTime.now())) {
+            throw new BadRequestException("Mã OTP đã hết hạn");
+        }
+
+        if (!otpToken.getOtp().equals(request.getOtp())) {
+            throw new BadRequestException("Mã OTP không chính xác");
+        }
+
+        otpToken.setUsed(true);
+        otpTokenRepository.save(otpToken);
 
         User user = User.builder()
                 .email(request.getEmail())

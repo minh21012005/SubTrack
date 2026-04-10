@@ -7,8 +7,11 @@ import type {
 
 // ─── Auth ────────────────────────────────────────────────────────────────────
 export const authApi = {
-  register: (email: string, name: string, password: string) =>
-    apiClient.post<ApiResponse<AuthResponse>>('/api/auth/register', { email, name, password }),
+  sendOtp: (email: string) =>
+    apiClient.post<ApiResponse<void>>('/api/auth/send-otp', { email }),
+
+  register: (email: string, name: string, password: string, otp: string) =>
+    apiClient.post<ApiResponse<AuthResponse>>('/api/auth/register', { email, name, password, otp }),
 
   login: (email: string, password: string) =>
     apiClient.post<ApiResponse<AuthResponse>>('/api/auth/login', { email, password }),
