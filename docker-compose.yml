@@ -1,0 +1,59 @@
+version: '3.9'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: subtrack-postgres
+    environment:
+      POSTGRES_DB: subtrack
+      POSTGRES_USER: subtrack
+      POSTGRES_PASSWORD: subtrack123
+    ports:
+      - "5432:5432"
+    volumes:
+      - subtrack_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U subtrack"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - subtrack-net
+
+  subtrack-be:
+    build:
+      context: ./subtrack-be
+      dockerfile: Dockerfile
+    container_name: subtrack-be
+    env_file:
+      - ./subtrack-be/be.env
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - subtrack-net
+    restart: unless-stopped
+
+  subtrack-fe:
+    build:
+      context: ./subtrack-fe
+      dockerfile: Dockerfile
+    container_name: subtrack-fe
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:8080
+    ports:
+      - "3000:3000"
+    depends_on:
+      - subtrack-be
+    networks:
+      - subtrack-net
+    restart: unless-stopped
+
+volumes:
+  subtrack_pgdata:
+
+networks:
+  subtrack-net:
+    driver: bridge

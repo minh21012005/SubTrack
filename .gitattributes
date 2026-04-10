@@ -1,0 +1,16 @@
+# Standardize line endings for all files
+* text=auto eol=lf
+
+# Explicitly set line endings for specific file types
+*.bat           text eol=crlf
+*.cmd           text eol=crlf
+*.ps1           text eol=crlf
+*.sh            text eol=lf
+
+# Binary files
+*.png           binary
+*.jpg           binary
+*.jpeg          binary
+*.gif           binary
+*.ico           binary
+*.pdf           binary

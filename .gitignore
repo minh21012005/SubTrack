@@ -1,0 +1,54 @@
+# IDEs and Editors
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+
+# Environment files
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+*.env
+
+# Docker
+docker-compose.override.yml
+
+# Logs
+logs/
+*.log
+
+# Project specific
+node_modules/
+dist/
+build/
+target/
+.next/
+out/
+
+# Secrets and Credentials
+*.pem
+*.key
+*.pub
+*.cert
+*.pfx
+*.p12
+*.crt
+*.jks
+*.keystore
+*.secret
+*.token
+*.password
+secrets/
+credentials/
+.aws/
+.ssh/
+
+# Environment and Local Config
+.env*
+!*.env.example
+*.local.properties
+be.env
+fe.env
