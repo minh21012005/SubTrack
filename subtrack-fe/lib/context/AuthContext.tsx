@@ -23,30 +23,32 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   useEffect(() => {
     const storedUser = localStorage.getItem('subtrack_user');
+    const token = getToken();
+
+    // 1. Load from cache immediately for fast UI
     if (storedUser) {
       try {
         const parsed: User = JSON.parse(storedUser);
-        // If the stored user is missing the role field (old session), refresh from API
-        if (!parsed.role) {
-          const token = getToken();
-          if (token) {
-            authApi.me().then(res => {
-              const freshUser = res.data.data;
-              setUser(freshUser);
-              localStorage.setItem('subtrack_user', JSON.stringify(freshUser));
-            }).catch(() => {
-              setUser(parsed);
-            }).finally(() => setIsInitializing(false));
-            return;
-          }
-        } else {
-          setUser(parsed);
-        }
+        setUser(parsed);
       } catch (error) {
         console.error('Failed to parse user from localStorage', error);
       }
     }
-    setIsInitializing(false);
+
+    // 2. Always sync with backend to get latest plan/role status
+    if (token) {
+      authApi.me().then(res => {
+        const freshUser = res.data.data;
+        setUser(freshUser);
+        localStorage.setItem('subtrack_user', JSON.stringify(freshUser));
+      }).catch(err => {
+        console.error('Failed to sync user state', err);
+      }).finally(() => {
+        setIsInitializing(false);
+      });
+    } else {
+      setIsInitializing(false);
+    }
   }, []);
 
   const logout = () => {

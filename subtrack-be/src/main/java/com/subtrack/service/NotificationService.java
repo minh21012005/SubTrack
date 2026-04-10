@@ -26,6 +26,7 @@ public class NotificationService {
 
     private final NotificationRepository notificationRepository;
     private final UserRepository userRepository;
+    private final EmailService emailService;
 
     public List<NotificationResponse> getUserNotifications(String email) {
         User user = getUser(email);
@@ -101,6 +102,20 @@ public class NotificationService {
 
         notificationRepository.save(notification);
         log.info("Created {} pattern for user {} subscription {}", type, user.getEmail(), subscription.getName());
+
+        // Send email asynchronously
+        org.thymeleaf.context.Context context = new org.thymeleaf.context.Context();
+        context.setVariable("userName", user.getName() != null ? user.getName() : "bạn");
+        context.setVariable("appName", subscription.getName());
+        context.setVariable("price", subscription.getPrice().toPlainString());
+        context.setVariable("renewalDate", subscription.getNextBillingDate() != null ? subscription.getNextBillingDate().toString() : "Sắp tới");
+        context.setVariable("appUrl", "http://localhost:3000/dashboard");
+
+        if (type == NotificationType.WASTE_ALERT) {
+            emailService.sendHtmlEmailAsync(user.getEmail(), "SubTrack - Cảnh báo lãng phí rủi ro cao", "waste-alert.html", context);
+        } else {
+            emailService.sendHtmlEmailAsync(user.getEmail(), "SubTrack - Nhắc nhở gia hạn đăng ký", "renewal-reminder.html", context);
+        }
     }
 
     /**
@@ -137,6 +152,16 @@ public class NotificationService {
 
         notificationRepository.save(notification);
         log.info("Created payment {} notification for user {}", approved ? "APPROVED" : "REJECTED", user.getEmail());
+
+        // Send email asynchronously
+        org.thymeleaf.context.Context context = new org.thymeleaf.context.Context();
+        context.setVariable("userName", user.getName() != null ? user.getName() : "bạn");
+        context.setVariable("isApproved", approved);
+        context.setVariable("period", period);
+        context.setVariable("reason", (notes != null && !notes.isBlank()) ? notes : "Lý do không được cung cấp. Vui lòng liên hệ hỗ trợ.");
+        context.setVariable("appUrl", "http://localhost:3000/dashboard");
+
+        emailService.sendHtmlEmailAsync(user.getEmail(), "SubTrack - Kết quả duyệt yêu cầu nâng cấp", "payment-decision.html", context);
     }
 
     @Transactional
@@ -150,6 +175,11 @@ public class NotificationService {
                 .build();
         notificationRepository.save(notification);
         log.info("Created plan expired notification for user {}", user.getEmail());
+
+        org.thymeleaf.context.Context context = new org.thymeleaf.context.Context();
+        context.setVariable("userName", user.getName() != null ? user.getName() : "bạn");
+        context.setVariable("appUrl", "http://localhost:3000/dashboard");
+        emailService.sendHtmlEmailAsync(user.getEmail(), "SubTrack - Gói Premium của bạn đã hết hạn", "plan-expired.html", context);
     }
 
     private User getUser(String email) {

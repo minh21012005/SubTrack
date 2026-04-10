@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f3f4f6; margin: 0; padding: 20px; color: #1f2937; }
+        .container { max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
+        .header-approved { background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; padding: 30px 20px; text-align: center; }
+        .header-rejected { background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); color: white; padding: 30px 20px; text-align: center; }
+        .header h1 { margin: 0; font-size: 24px; font-weight: 800; }
+        .content { padding: 30px 20px; }
+        .card { background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; margin: 20px 0; }
+        .footer { background-color: #f8fafc; padding: 20px; text-align: center; font-size: 12px; color: #64748b; border-top: 1px solid #e2e8f0; }
+        .btn { display: inline-block; background-color: #4c1d95; color: white; text-decoration: none; padding: 12px 24px; border-radius: 8px; font-weight: 600; margin-top: 10px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div th:class="${isApproved} ? 'header-approved header' : 'header-rejected header'">
+            <h1 th:text="${isApproved} ? 'THÀNH CÔNG 🎉' : 'TỪ CHỐI ❌'">THÀNH CÔNG 🎉</h1>
+            <p style="margin-top: 5px; opacity: 0.9;" th:text="${isApproved} ? 'Tài khoản Premium đã hoạt động' : 'Yêu cầu không được phê duyệt'">Tài khoản Premium đã hoạt động</p>
+        </div>
+        <div class="content">
+            <h2 style="margin-top: 0;">Xin chào <span th:text="${userName}">User</span>,</h2>
+            
+            <div th:if="${isApproved}">
+                <p>Tuyệt vời! Yêu cầu nâng cấp lên gói <strong>Premium (<span th:text="${period}"></span>)</strong> của bạn đã được quản trị viên duyệt thành công.</p>
+                <div class="card" style="text-align: center;">
+                    <h3 style="margin: 0; color: #059669; font-size: 18px;">Bạn đã có thể sử dụng tất cả tính năng Premium!</h3>
+                    <p style="margin-bottom: 0; color: #64748b; font-size: 14px; margin-top: 10px;">Bao gồm: Không giới hạn subscription, báo cáo chi tiết, và Cảnh báo lãng phí rủi ro cao.</p>
+                </div>
+            </div>
+
+            <div th:unless="${isApproved}">
+                <p>Rất tiếc, yêu cầu nâng cấp lên gói <strong>Premium (<span th:text="${period}"></span>)</strong> của bạn đã bị từ chối.</p>
+                <div class="card" style="text-align: center; border-color: #fca5a5; background-color: #fef2f2;">
+                    <h3 style="margin: 0; color: #dc2626; font-size: 16px;">Lý do từ chối:</h3>
+                    <p style="margin-bottom: 0; color: #991b1b; font-size: 14px; font-weight: bold; margin-top: 10px;" th:text="${reason}">Không nhận được thanh toán.</p>
+                </div>
+                <p>Vui lòng thử lại hoặc liên hệ quản trị viên để giải quyết.</p>
+            </div>
+
+            <div style="text-align: center; margin-top: 20px;">
+                <a th:href="${appUrl}" class="btn">Tới Dashboard</a>
+            </div>
+        </div>
+        <div class="footer">
+            <p>Email này được gửi tự động từ hệ thống SubTrack.</p>
+            <p>&copy; 2026 SubTrack. All rights reserved.</p>
+        </div>
+    </div>
+</body>
+</html>
