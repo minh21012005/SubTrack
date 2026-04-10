@@ -12,10 +12,11 @@ export function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // Check for token in cookies
+  // Check for tokens
   const token = request.cookies.get('subtrack_token')?.value;
+  const refreshToken = request.cookies.get('subtrack_refresh')?.value;
 
-  if (!token) {
+  if (!token && !refreshToken) {
     const url = request.nextUrl.clone();
     url.pathname = '/login';
     return NextResponse.redirect(url);
@@ -25,5 +26,5 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/((?!_next/static|_next/image|favicon.ico|api/).*)'],
+  matcher: ['/((?!api|_next/static|_next/image|favicon.ico|.*\\..*).*)'],
 };

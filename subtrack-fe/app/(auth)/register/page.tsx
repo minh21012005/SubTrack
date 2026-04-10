@@ -143,51 +143,83 @@ export default function RegisterPage() {
             </button>
           </form>
         ) : (
-          <form onSubmit={handleRegister} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-            <div className="form-group">
-              <label className="form-label">Mã OTP (6 chữ số)</label>
-              <div style={{ position: 'relative' }}>
-                <Mail size={18} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+            <div style={{ display: 'flex', justifyContent: 'center', gap: 10 }}>
+              {[0, 1, 2, 3, 4, 5].map((i) => (
                 <input
+                  key={i}
+                  id={`otp-${i}`}
                   type="text"
-                  className="form-input"
-                  placeholder="Ví dụ: 123456"
-                  maxLength={6}
-                  value={form.otp}
-                  onChange={set('otp')}
-                  required
-                  autoFocus
-                  style={{ paddingLeft: 38, letterSpacing: '2px', fontSize: '1.2rem', textAlign: 'center' }}
+                  maxLength={1}
+                  value={form.otp[i] || ''}
+                  onChange={(e) => {
+                    const val = e.target.value.replace(/\D/g, '');
+                    const newOtp = form.otp.split('');
+                    newOtp[i] = val;
+                    const finalOtp = newOtp.join('');
+                    setForm({ ...form, otp: finalOtp });
+                    
+                    if (val && i < 5) {
+                      document.getElementById(`otp-${i + 1}`)?.focus();
+                    }
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Backspace' && !form.otp[i] && i > 0) {
+                      document.getElementById(`otp-${i - 1}`)?.focus();
+                    }
+                  }}
+                  style={{
+                    width: '46px',
+                    height: '56px',
+                    textAlign: 'center',
+                    fontSize: '1.5rem',
+                    fontWeight: 'bold',
+                    borderRadius: '12px',
+                    border: '2px solid var(--border)',
+                    backgroundColor: 'var(--bg-secondary)',
+                    transition: 'all 0.2s ease',
+                    outline: 'none',
+                    color: 'var(--primary)',
+                    boxShadow: form.otp[i] ? '0 0 0 2px var(--primary-light)' : 'none',
+                    borderColor: form.otp[i] ? 'var(--primary)' : 'var(--border)'
+                  }}
+                  autoFocus={i === 0}
                 />
+              ))}
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              <button 
+                onClick={handleRegister} 
+                className="btn btn-primary btn-full btn-lg" 
+                disabled={loading || form.otp.length !== 6}
+                style={{ height: '52px', fontSize: '1rem' }}
+              >
+                {loading ? <Loader2 size={18} className="animate-spin" /> : 'Xác nhận mã OTP'}
+              </button>
+
+              <div style={{ display: 'flex', gap: 12 }}>
+                <button 
+                  type="button" 
+                  onClick={() => {setStep(1); setError(''); setSuccessMsg(''); setForm({...form, otp: ''});}}
+                  className="btn" 
+                  style={{ flex: 1, background: 'var(--bg-secondary)', color: 'var(--text-secondary)', border: '1px solid var(--border)', fontSize: '0.85rem' }}
+                  disabled={loading}
+                >
+                  Đổi email
+                </button>
+                <button 
+                  type="button" 
+                  onClick={handleSendOtp}
+                  className="btn" 
+                  style={{ flex: 1, background: 'transparent', color: 'var(--accent-orange)', border: '1px solid var(--accent-orange)', fontSize: '0.85rem' }}
+                  disabled={loading}
+                >
+                  Gửi lại mã
+                </button>
               </div>
             </div>
-
-            <button type="submit" className="btn btn-primary btn-full btn-lg" disabled={loading} style={{ marginTop: 4 }}>
-              {loading ? <Loader2 size={18} className="animate-spin" /> : null}
-              {loading ? 'Đang tạo tài khoản...' : 'Xác nhận & Tạo tài khoản'}
-            </button>
-
-            <div style={{ display: 'flex', gap: 10, marginTop: 4 }}>
-              <button 
-                type="button" 
-                onClick={() => {setStep(1); setError(''); setSuccessMsg('');}}
-                className="btn" 
-                style={{ flex: 1, background: 'transparent', color: 'var(--text-secondary)', border: '1px solid var(--border)' }}
-                disabled={loading}
-              >
-                Quay lại
-              </button>
-              <button 
-                type="button" 
-                onClick={handleSendOtp}
-                className="btn" 
-                style={{ flex: 1, background: 'transparent', color: 'var(--accent-orange)', border: '1px solid var(--accent-orange)' }}
-                disabled={loading}
-              >
-                Gửi lại mã
-              </button>
-            </div>
-          </form>
+          </div>
         )}
 
         {step === 1 && (

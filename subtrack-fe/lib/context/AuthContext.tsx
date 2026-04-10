@@ -10,7 +10,7 @@ interface AuthContextType {
   user: User | null;
   isLoggedIn: boolean;
   isInitializing: boolean;
-  logout: () => void;
+  logout: () => Promise<void>;
   updateUser: (user: User) => void;
 }
 
@@ -36,7 +36,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
 
     // 2. Always sync with backend to get latest plan/role status
-    if (token) {
+    if (token || storedUser) {
       authApi.me().then(res => {
         const freshUser = res.data.data;
         setUser(freshUser);
@@ -51,12 +51,18 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
   }, []);
 
-  const logout = () => {
-    setUser(null);
-    localStorage.removeItem('subtrack_token');
-    localStorage.removeItem('subtrack_user');
-    document.cookie = 'subtrack_token=; path=/; max-age=0; expires=Thu, 01 Jan 1970 00:00:00 GMT';
-    router.push('/login');
+  const logout = async () => {
+    try {
+      await authApi.logout();
+    } catch (err) {
+      console.error('Logout API failed', err);
+    } finally {
+      setUser(null);
+      localStorage.removeItem('subtrack_token');
+      localStorage.removeItem('subtrack_user');
+      document.cookie = 'subtrack_refresh=; path=/; max-age=0; expires=Thu, 01 Jan 1970 00:00:00 GMT';
+      router.push('/login');
+    }
   };
 
   const updateUser = (newUser: User) => {

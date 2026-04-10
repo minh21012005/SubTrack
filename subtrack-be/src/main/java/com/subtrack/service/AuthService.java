@@ -11,9 +11,12 @@ import com.subtrack.exception.BadRequestException;
 import com.subtrack.dto.request.OtpRequest;
 import com.subtrack.entity.OtpToken;
 import com.subtrack.repository.OtpTokenRepository;
+import com.subtrack.entity.RefreshToken;
+import com.subtrack.repository.RefreshTokenRepository;
 import com.subtrack.exception.ConflictException;
 import com.subtrack.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -32,6 +35,10 @@ public class AuthService {
     private final AuthenticationManager authenticationManager;
     private final OtpTokenRepository otpTokenRepository;
     private final EmailService emailService;
+    private final RefreshTokenRepository refreshTokenRepository;
+
+    @Value("${jwt.refresh-expiration}")
+    private long jwtRefreshExpiration;
 
     @Transactional
     public void sendOtp(OtpRequest request) {
@@ -104,8 +111,11 @@ public class AuthService {
                 )
         );
 
+        String refreshToken = createRefreshToken(user);
+
         return AuthResponse.builder()
                 .token(token)
+                .refreshToken(refreshToken)
                 .tokenType("Bearer")
                 .user(toUserResponse(user))
                 .build();
@@ -129,8 +139,13 @@ public class AuthService {
                 )
         );
 
+        // Xóa refresh token cũ và tạo mới để xoay vòng
+        refreshTokenRepository.deleteByUser(user);
+        String refreshToken = createRefreshToken(user);
+
         return AuthResponse.builder()
                 .token(token)
+                .refreshToken(refreshToken)
                 .tokenType("Bearer")
                 .user(toUserResponse(user))
                 .build();
@@ -140,6 +155,54 @@ public class AuthService {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new BadRequestException("Tài khoản không tồn tại"));
         return toUserResponse(user);
+    }
+
+    @Transactional
+    public String createRefreshToken(User user) {
+        String token = java.util.UUID.randomUUID().toString();
+        RefreshToken refreshToken = RefreshToken.builder()
+                .user(user)
+                .token(token)
+                .expiryDate(java.time.OffsetDateTime.now().plusSeconds(jwtRefreshExpiration / 1000))
+                .build();
+        refreshTokenRepository.save(refreshToken);
+        return token;
+    }
+
+    @Transactional
+    public AuthResponse refreshAccessToken(String requestRefreshToken) {
+        RefreshToken refreshToken = refreshTokenRepository.findByToken(requestRefreshToken)
+                .orElseThrow(() -> new BadRequestException("Refresh token không hợp lệ hoặc đã đăng xuất."));
+
+        if (refreshToken.getExpiryDate().isBefore(java.time.OffsetDateTime.now())) {
+            refreshTokenRepository.delete(refreshToken);
+            throw new BadRequestException("Refresh token đã hết hạn. Vui lòng đăng nhập lại.");
+        }
+
+        User user = refreshToken.getUser();
+        String newToken = jwtService.generateToken(
+                new org.springframework.security.core.userdetails.User(
+                        user.getEmail(), user.getPasswordHash(), java.util.List.of(new SimpleGrantedAuthority("ROLE_" + user.getRole().name()))
+                )
+        );
+        
+        // Rotate refresh token
+        refreshTokenRepository.delete(refreshToken);
+        String newRefreshToken = createRefreshToken(user);
+
+        return AuthResponse.builder()
+                .token(newToken)
+                .tokenType("Bearer")
+                .refreshToken(newRefreshToken)
+                .user(toUserResponse(user))
+                .build();
+    }
+
+    @Transactional
+    public void logout(String refreshToken) {
+        if (refreshToken != null) {
+            refreshTokenRepository.deleteByToken(refreshToken);
+        }
     }
 
     @Transactional

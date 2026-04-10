@@ -37,7 +37,8 @@ spring:
 
 jwt:
   secret: ${JWT_SECRET:subtrack-super-secret-key-that-is-at-least-256-bits-long-for-hs512}
-  expiration: ${JWT_EXPIRATION:86400000}
+  expiration: ${JWT_EXPIRATION:900000}
+  refresh-expiration: ${JWT_REFRESH_EXPIRATION:604800000}
 
 app:
   free-subscription-limit: ${APP_FREE_LIMIT:5}

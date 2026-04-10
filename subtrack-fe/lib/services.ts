@@ -16,6 +16,9 @@ export const authApi = {
   login: (email: string, password: string) =>
     apiClient.post<ApiResponse<AuthResponse>>('/api/auth/login', { email, password }),
 
+  logout: () =>
+    apiClient.post<ApiResponse<void>>('/api/auth/logout'),
+
   me: () =>
     apiClient.get<ApiResponse<User>>('/api/auth/me'),
 
