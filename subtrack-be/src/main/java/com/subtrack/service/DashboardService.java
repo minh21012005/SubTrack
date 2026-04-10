@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -88,7 +89,7 @@ public class DashboardService {
     private List<UpcomingChargeResponse> buildUpcoming(java.util.UUID userId, LocalDate start, LocalDate end) {
         return subscriptionRepository.findUpcoming(userId, start, end).stream()
                 .map(s -> {
-                    long days = LocalDate.now().until(s.getNextBillingDate()).getDays();
+                    long days = ChronoUnit.DAYS.between(LocalDate.now(), s.getNextBillingDate());
                     return UpcomingChargeResponse.builder()
                             .subscriptionId(s.getId())
                             .name(s.getName())
@@ -107,7 +108,7 @@ public class DashboardService {
 
     private SubscriptionResponse toSubResponse(Subscription s, List<String> duplicates) {
         boolean isDup = wasteEngine.isPotentialDuplicate(s, duplicates);
-        long days = LocalDate.now().until(s.getNextBillingDate()).getDays();
+        long days = ChronoUnit.DAYS.between(LocalDate.now(), s.getNextBillingDate());
         return SubscriptionResponse.builder()
                 .id(s.getId())
                 .name(s.getName())

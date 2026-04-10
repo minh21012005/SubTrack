@@ -2,9 +2,10 @@
 
 import { motion } from 'framer-motion';
 import { AlertTriangle, CheckCircle, XCircle, RotateCcw, ExternalLink, Copy, Trash2 } from 'lucide-react';
-import { formatVND, categoryLabel, usageStatusLabel, billingCycleLabel } from '@/lib/utils';
+import { formatVND, categoryLabel, billingCycleLabel } from '@/lib/utils';
 import BrandLogo from '@/components/ui/BrandLogo';
 import type { Subscription, ActionType } from '@/lib/types';
+import { useAuth } from '@/lib/context/AuthContext';
 
 interface SubscriptionCardProps {
   subscription: Subscription;
@@ -20,6 +21,8 @@ const USAGE_CONFIG = {
 };
 
 export default function SubscriptionCard({ subscription: sub, onAction, onDelete, loading }: SubscriptionCardProps) {
+  const { user } = useAuth();
+  const isPremium = user?.planType === 'PREMIUM';
   const usage = USAGE_CONFIG[sub.usageStatus];
   const hasWaste = sub.wasteCost > 0;
   const isCancelled = sub.cancelled;
@@ -42,8 +45,8 @@ export default function SubscriptionCard({ subscription: sub, onAction, onDelete
         overflow: 'hidden',
       }}
     >
-      {/* Waste stripe accent */}
-      {hasWaste && !isCancelled && (
+      {/* Waste stripe accent - Premium ONLY */}
+      {isPremium && hasWaste && !isCancelled && (
         <div style={{
           position: 'absolute', left: 0, top: 0, bottom: 0, width: 4,
           background: usage.color,
@@ -61,7 +64,7 @@ export default function SubscriptionCard({ subscription: sub, onAction, onDelete
               {sub.name}
             </span>
             {isCancelled && <span className="badge badge-gray">Đã hủy</span>}
-            {sub.potentialDuplicate && !isCancelled && (
+            {isPremium && sub.potentialDuplicate && !isCancelled && (
               <span className="badge badge-orange" title="Trùng danh mục với subscription khác">
                 <Copy size={10} /> Trùng lặp
               </span>
@@ -69,13 +72,15 @@ export default function SubscriptionCard({ subscription: sub, onAction, onDelete
           </div>
 
           <div style={{ display: 'flex', gap: 8, marginTop: 4, flexWrap: 'wrap', alignItems: 'center' }}>
-            <span style={{
-              fontSize: '0.75rem', fontWeight: 500, padding: '2px 8px',
-              borderRadius: 'var(--radius-full)',
-              background: usage.bg, color: usage.color,
-            }}>
-              {usage.label}
-            </span>
+            {isPremium && (
+              <span style={{
+                fontSize: '0.75rem', fontWeight: 500, padding: '2px 8px',
+                borderRadius: 'var(--radius-full)',
+                background: usage.bg, color: usage.color,
+              }}>
+                {usage.label}
+              </span>
+            )}
             <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
               {categoryLabel(sub.category)}
             </span>
@@ -102,8 +107,8 @@ export default function SubscriptionCard({ subscription: sub, onAction, onDelete
         </div>
       </div>
 
-      {/* Waste info */}
-      {hasWaste && !isCancelled && (
+      {/* Waste info - Premium ONLY */}
+      {isPremium && hasWaste && !isCancelled && (
         <div style={{
           marginTop: 12, padding: '8px 12px',
           background: usage.bg,
@@ -120,16 +125,25 @@ export default function SubscriptionCard({ subscription: sub, onAction, onDelete
         </div>
       )}
 
+      {/* Days until renewal for Free users */}
+      {!isPremium && !isCancelled && (
+        <div style={{ marginTop: 12, fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
+          Gia hạn sau: {sub.daysUntilRenewal === 0 ? 'hôm nay' : `${sub.daysUntilRenewal} ngày`}
+        </div>
+      )}
+
       {/* Actions */}
       {!isCancelled && (
         <div style={{ display: 'flex', gap: 8, marginTop: 14, flexWrap: 'wrap' }}>
-          <button
-            className="btn btn-success btn-sm"
-            onClick={() => onAction(sub.id, 'KEEP')}
-            disabled={loading}
-          >
-            <CheckCircle size={14} /> Giữ lại
-          </button>
+          {isPremium && (
+            <button
+              className="btn btn-success btn-sm"
+              onClick={() => onAction(sub.id, 'KEEP')}
+              disabled={loading}
+            >
+              <CheckCircle size={14} /> Giữ lại
+            </button>
+          )}
           <button
             className="btn btn-danger btn-sm"
             onClick={() => onAction(sub.id, 'CANCEL')}
@@ -137,7 +151,8 @@ export default function SubscriptionCard({ subscription: sub, onAction, onDelete
           >
             <XCircle size={14} /> Hủy bỏ
           </button>
-          {sub.usageStatus === 'ACTIVE' && (
+          
+          {isPremium && sub.usageStatus === 'ACTIVE' && (
             <button
               className="btn btn-outline btn-sm"
               style={{ color: 'var(--accent-orange)', borderColor: 'var(--accent-orange)' }}
@@ -147,7 +162,7 @@ export default function SubscriptionCard({ subscription: sub, onAction, onDelete
               Hiếm dùng
             </button>
           )}
-          {sub.usageStatus !== 'UNUSED' && (
+          {isPremium && sub.usageStatus !== 'UNUSED' && (
             <button
               className="btn btn-outline btn-sm"
               style={{ color: 'var(--accent-red)', borderColor: 'var(--accent-red)' }}
@@ -157,7 +172,8 @@ export default function SubscriptionCard({ subscription: sub, onAction, onDelete
               Không dùng
             </button>
           )}
-          {sub.usageStatus !== 'ACTIVE' && (
+          
+          {(isPremium ? sub.usageStatus !== 'ACTIVE' : false) && (
             <button
               className="btn btn-ghost btn-sm"
               onClick={() => onAction(sub.id, 'MARK_ACTIVE')}
@@ -166,6 +182,7 @@ export default function SubscriptionCard({ subscription: sub, onAction, onDelete
               <RotateCcw size={13} /> Kích hoạt lại
             </button>
           )}
+          
           {onDelete && (
             <button
               className="btn btn-ghost btn-sm"

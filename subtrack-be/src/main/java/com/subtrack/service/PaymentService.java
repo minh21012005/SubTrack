@@ -28,6 +28,8 @@ public class PaymentService {
     private final UserRepository userRepository;
     private final NotificationService notificationService;
     private final RenewalReminderRepository renewalReminderRepository;
+    private final PlanService planService;
+
 
     private static final BigDecimal PRICE_MONTHLY = new BigDecimal("29000");
     private static final BigDecimal PRICE_YEARLY  = new BigDecimal("199000");
@@ -94,30 +96,16 @@ public class PaymentService {
         User admin = userRepository.findByEmail(adminEmail)
                 .orElseThrow(() -> new BadRequestException("Admin không tồn tại"));
 
-        // Upgrade user plan
+        // Upgrade user plan using PlanService
         User user = req.getUser();
-        user.setPlanType(PlanType.PREMIUM);
         user.setBillingPeriod(req.getBillingPeriod());
-        user.setReminderDaysBefore(7);
-        userRepository.save(user);
-
-        // Update existing reminders to 7 days
-        user.getSubscriptions().forEach(sub -> {
-            renewalReminderRepository.findBySubscriptionId(sub.getId()).ifPresent(reminder -> {
-                reminder.setDaysBefore(7);
-                renewalReminderRepository.save(reminder);
-            });
-        });
-
-        // Calculate expiration date
-        OffsetDateTime now = OffsetDateTime.now();
-        if (req.getBillingPeriod() == BillingPeriod.YEARLY) {
-            user.setPlanExpiresAt(now.plusDays(365));
-        } else {
-            user.setPlanExpiresAt(now.plusDays(31));
-        }
         
-        userRepository.save(user);
+        OffsetDateTime now = OffsetDateTime.now();
+        OffsetDateTime expiresAt = (req.getBillingPeriod() == BillingPeriod.YEARLY) 
+                ? now.plusDays(365) : now.plusDays(31);
+
+        planService.upgradeToPremium(user, expiresAt);
+
 
         req.setStatus(PaymentRequestStatus.APPROVED);
         req.setVerifiedAt(OffsetDateTime.now());

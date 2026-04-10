@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -203,7 +204,7 @@ public class SubscriptionService {
 
     private SubscriptionResponse toResponse(Subscription sub, List<String> duplicateCategories) {
         boolean isDuplicate = wasteEngine.isPotentialDuplicate(sub, duplicateCategories);
-        long daysUntil = LocalDate.now().until(sub.getNextBillingDate()).getDays();
+        long daysUntil = ChronoUnit.DAYS.between(LocalDate.now(), sub.getNextBillingDate());
 
         String websiteUrl = null;
         UUID presetId = null;

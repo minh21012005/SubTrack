@@ -2,6 +2,7 @@ package com.subtrack.repository;
 
 import com.subtrack.entity.RenewalReminder;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
@@ -20,4 +21,11 @@ public interface RenewalReminderRepository extends JpaRepository<RenewalReminder
            "AND s.cancelled = false " +
            "AND s.nextBillingDate = :targetDate")
     List<RenewalReminder> findDueReminders(LocalDate targetDate);
+
+    @Query("SELECT r FROM RenewalReminder r WHERE r.subscription.user.id = :userId")
+    List<RenewalReminder> findByUserId(UUID userId);
+
+    @Modifying
+    @Query("UPDATE RenewalReminder r SET r.daysBefore = :days WHERE r.subscription.user.id = :userId")
+    void updateDaysBeforeByUserId(UUID userId, int days);
 }

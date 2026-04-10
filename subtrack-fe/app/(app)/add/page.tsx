@@ -10,12 +10,15 @@ import PresetGrid from '@/components/subscription/PresetGrid';
 import BrandLogo from '@/components/ui/BrandLogo';
 import { categoryLabel, CATEGORIES, BILLING_CYCLES } from '@/lib/utils';
 import type { Preset, BillingCycle, UsageStatus } from '@/lib/types';
+import { useAuth } from '@/lib/context/AuthContext';
 
 type Step = 1 | 2 | 3;
 
 export default function AddSubscriptionPage() {
   const router = useRouter();
   const queryClient = useQueryClient();
+  const { user } = useAuth();
+  const isPremium = user?.planType === 'PREMIUM';
 
   const [step, setStep] = useState<Step>(1);
   const [selectedPreset, setSelectedPreset] = useState<Preset | null>(null);
@@ -226,6 +229,16 @@ export default function AddSubscriptionPage() {
                 </div>
               )}
 
+              {isPremium && form.usageStatus !== 'ACTIVE' && (
+                <div style={{
+                  marginTop: 16, padding: '12px 16px', background: 'var(--accent-red-light)',
+                  border: '1px solid var(--accent-red)', borderRadius: 'var(--radius-sm)',
+                  fontSize: '0.875rem', color: 'var(--accent-red)',
+                }}>
+                  Bạn đang thêm một subscription không được dùng hiệu quả. Nó sẽ được tính vào mục Lãng phí.
+                </div>
+              )}
+
               <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                 <div className="form-group">
                   <label className="form-label">Tên subscription *</label>
@@ -274,22 +287,24 @@ export default function AddSubscriptionPage() {
                   </select>
                 </div>
 
-                <div className="form-group">
-                  <label className="form-label">Tình trạng sử dụng</label>
-                  <div style={{ display: 'flex', gap: 8 }}>
-                    {(['ACTIVE', 'RARELY', 'UNUSED'] as UsageStatus[]).map((status) => {
-                      const labels: Record<UsageStatus, string> = { ACTIVE: '✅ Đang dùng', RARELY: '🟡 Hiếm dùng', UNUSED: '🔴 Không dùng' };
-                      return (
-                        <button key={status}
-                          type="button"
-                          className={`chip ${form.usageStatus === status ? 'active' : ''}`}
-                          onClick={() => setForm((f) => ({ ...f, usageStatus: status }))}>
-                          {labels[status]}
-                        </button>
-                      );
-                    })}
+                {isPremium && (
+                  <div className="form-group">
+                    <label className="form-label">Tình trạng sử dụng</label>
+                    <div style={{ display: 'flex', gap: 8 }}>
+                      {(['ACTIVE', 'RARELY', 'UNUSED'] as UsageStatus[]).map((status) => {
+                        const labels: Record<UsageStatus, string> = { ACTIVE: '✅ Đang dùng', RARELY: '🟡 Hiếm dùng', UNUSED: '🔴 Không dùng' };
+                        return (
+                          <button key={status}
+                            type="button"
+                            className={`chip ${form.usageStatus === status ? 'active' : ''}`}
+                            onClick={() => setForm((f) => ({ ...f, usageStatus: status }))}>
+                            {labels[status]}
+                          </button>
+                        );
+                      })}
+                    </div>
                   </div>
-                </div>
+                )}
 
                 <div className="form-group">
                   <label className="form-label">Ghi chú (tuỳ chọn)</label>
@@ -323,9 +338,9 @@ export default function AddSubscriptionPage() {
                   ['Chu kỳ', BILLING_CYCLES.find(b => b.value === form.billingCycle)?.label || form.billingCycle],
                   ['Gia hạn tiếp', form.nextBillingDate || defaultDate()],
                   ['Danh mục', categoryLabel(form.category)],
-                  ['Tình trạng', form.usageStatus === 'ACTIVE' ? 'Đang dùng' : form.usageStatus === 'RARELY' ? 'Hiếm dùng' : 'Không dùng'],
+                  isPremium ? ['Tình trạng', form.usageStatus === 'ACTIVE' ? 'Đang dùng' : form.usageStatus === 'RARELY' ? 'Hiếm dùng' : 'Không dùng'] : null,
                   ...(form.notes ? [['Ghi chú', form.notes]] : []),
-                ].map(([key, val]) => (
+                ].filter(Boolean).map(([key, val]) => (
                   <div key={key} style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid var(--border-light)' }}>
                     <span style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>{key}</span>
                     <span style={{ fontWeight: 600, fontSize: '0.875rem' }}>{val}</span>
@@ -335,7 +350,7 @@ export default function AddSubscriptionPage() {
 
               {error && <div className="alert alert-error" style={{ marginBottom: 16 }}>{error}</div>}
 
-              {form.usageStatus !== 'ACTIVE' && (
+              {isPremium && form.usageStatus !== 'ACTIVE' && (
                 <div className="alert alert-info" style={{ marginBottom: 16 }}>
                   💡 Subscription này sẽ ngay lập tức được tính là <strong>lãng phí</strong> vì tình trạng không phải "Đang dùng".
                 </div>

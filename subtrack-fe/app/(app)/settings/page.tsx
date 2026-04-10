@@ -89,7 +89,7 @@ export default function SettingsPage() {
           </div>
 
           <div style={{ background: 'var(--bg)', borderRadius: 'var(--radius-sm)', padding: '12px 16px', fontSize: '0.875rem', color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: 8 }}>
-            <Bell size={16} color="var(--accent-orange)" /> Nhắc nhở gia hạn trước <strong>{user?.reminderDaysBefore || 7} ngày</strong>
+            <Bell size={16} color="var(--accent-orange)" /> Nhắc nhở gia hạn trước <strong>{user?.planType === 'PREMIUM' ? (user?.reminderDaysBefore || 7) : 3} ngày</strong>
           </div>
 
         </div>

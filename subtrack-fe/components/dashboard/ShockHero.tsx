@@ -68,67 +68,6 @@ export default function ShockHero({ data }: { data: Dashboard }) {
         </div>
       </motion.div>
 
-      {/* Waste alert card */}
-      {hasWaste && (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.15 }}
-          style={{
-            background: 'linear-gradient(135deg, #fff1f1 0%, #ffe4e4 100%)',
-            border: '1.5px solid #fca5a5',
-            borderRadius: 'var(--radius-lg)',
-            padding: '20px 24px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            gap: 16,
-          }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-            <div style={{
-              width: 44, height: 44,
-              background: 'var(--accent-red)',
-              borderRadius: 12,
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              flexShrink: 0,
-              boxShadow: 'var(--shadow-glow-red)',
-            }}>
-              <AlertCircle size={22} color="white" />
-            </div>
-            <div>
-              <div style={{ fontSize: '0.8rem', color: '#991b1b', fontWeight: 600, marginBottom: 2 }}>
-                💸 ĐANG LÃNG PHÍ
-              </div>
-              <div style={{ fontSize: '1.5rem', fontWeight: 900, color: 'var(--accent-red)', letterSpacing: '-0.03em' }}>
-                <AnimatedCounter
-                  value={data.totalWasteCost}
-                  formatter={(v) => `~${formatVND(v)}`}
-                  duration={1200}
-                />
-                &nbsp;
-                <span style={{ fontSize: '0.9rem', fontWeight: 600 }}>/ tháng</span>
-              </div>
-              <div style={{ fontSize: '0.8rem', color: '#b91c1c', marginTop: 2 }}>
-                {data.wasteCount} subscription không cần thiết · {data.wastePercentage}% tổng chi tiêu
-              </div>
-            </div>
-          </div>
-
-          <Link href="/waste" style={{ flexShrink: 0 }}>
-            <button style={{
-              display: 'flex', alignItems: 'center', gap: 6,
-              background: 'var(--accent-red)', color: 'white',
-              border: 'none', borderRadius: 10, padding: '10px 18px',
-              fontSize: '0.875rem', fontWeight: 700, cursor: 'pointer',
-              boxShadow: 'var(--shadow-glow-red)',
-              whiteSpace: 'nowrap',
-            }}>
-              <TrendingDown size={16} /> Xem chi tiết <ChevronRight size={14} />
-            </button>
-          </Link>
-        </motion.div>
-      )}
     </div>
   );
 }

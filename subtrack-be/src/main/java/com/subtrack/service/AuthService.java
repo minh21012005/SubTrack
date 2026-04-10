@@ -39,7 +39,7 @@ public class AuthService {
                 .name(request.getName())
                 .passwordHash(passwordEncoder.encode(request.getPassword()))
                 .planType(PlanType.FREE)
-                .reminderDaysBefore(7)
+                .reminderDaysBefore(3)
                 .build();
 
         userRepository.save(user);

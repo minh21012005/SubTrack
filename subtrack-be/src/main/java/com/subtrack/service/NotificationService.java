@@ -62,18 +62,37 @@ public class NotificationService {
      */
     @Transactional
     public void createRenewalNotification(User user, Subscription subscription) {
-        String message = String.format(
-                "⏰ Subscription \"%s\" sẽ gia hạn vào ngày %s (%s %s)",
-                subscription.getName(),
-                subscription.getNextBillingDate(),
-                subscription.getPrice().toPlainString(),
-                subscription.getCurrency()
-        );
+        String message;
+        NotificationType type;
+
+        // Premium Smart Alert Logic
+        if (user.getPlanType() == com.subtrack.enums.PlanType.PREMIUM && 
+           (subscription.getUsageStatus() == com.subtrack.enums.UsageStatus.UNUSED || 
+            subscription.getUsageStatus() == com.subtrack.enums.UsageStatus.RARELY)) {
+            
+            message = String.format(
+                    "⚠️ [CẢNH BÁO LÃNG PHÍ] %s chuẩn bị gia hạn %s. Đáng lưu ý là bạn ÍT hoặc KHÔNG sử dụng nó gần đây. Hủy ngay để tránh mất tiền oan?",
+                    subscription.getName(),
+                    subscription.getPrice().toPlainString()
+            );
+            type = NotificationType.WASTE_ALERT;
+            
+        } else {
+            // Standard Alert
+            message = String.format(
+                    "⏰ Subscription \"%s\" sẽ gia hạn vào ngày %s (%s %s)",
+                    subscription.getName(),
+                    subscription.getNextBillingDate(),
+                    subscription.getPrice().toPlainString(),
+                    subscription.getCurrency()
+            );
+            type = NotificationType.RENEWAL_REMINDER;
+        }
 
         Notification notification = Notification.builder()
                 .user(user)
                 .subscription(subscription)
-                .type(NotificationType.RENEWAL_REMINDER)
+                .type(type)
                 .message(message)
                 .status(NotificationStatus.UNREAD)
                 .scheduledAt(OffsetDateTime.now())
@@ -81,7 +100,7 @@ public class NotificationService {
                 .build();
 
         notificationRepository.save(notification);
-        log.info("Created renewal notification for user {} subscription {}", user.getEmail(), subscription.getName());
+        log.info("Created {} pattern for user {} subscription {}", type, user.getEmail(), subscription.getName());
     }
 
     /**
@@ -118,6 +137,19 @@ public class NotificationService {
 
         notificationRepository.save(notification);
         log.info("Created payment {} notification for user {}", approved ? "APPROVED" : "REJECTED", user.getEmail());
+    }
+
+    @Transactional
+    public void createPlanExpiredNotification(User user) {
+        Notification notification = Notification.builder()
+                .user(user)
+                .type(NotificationType.GENERAL)
+                .message("Gói Premium của bạn đã hết hạn. Tài khoản đã tự động chuyển về gói Free.")
+                .status(NotificationStatus.UNREAD)
+                .sentAt(OffsetDateTime.now())
+                .build();
+        notificationRepository.save(notification);
+        log.info("Created plan expired notification for user {}", user.getEmail());
     }
 
     private User getUser(String email) {
