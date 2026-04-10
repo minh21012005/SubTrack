@@ -3,14 +3,14 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import { notificationApi } from '@/lib/services';
-import { Bell, CheckCheck, Clock } from 'lucide-react';
+import { Bell, CheckCheck, Clock, AlarmClock, AlertTriangle, Megaphone } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { vi } from 'date-fns/locale';
 
-const TYPE_EMOJI: Record<string, string> = {
-  RENEWAL_REMINDER: '⏰',
-  WASTE_ALERT: '🔥',
-  GENERAL: '📢',
+const TYPE_ICON: Record<string, React.ReactNode> = {
+  RENEWAL_REMINDER: <AlarmClock size={18} color="var(--accent-orange)" />,
+  WASTE_ALERT: <AlertTriangle size={18} color="var(--accent-red)" />,
+  GENERAL: <Megaphone size={18} color="var(--primary)" />,
 };
 
 export default function NotificationsPage() {
@@ -63,7 +63,7 @@ export default function NotificationsPage() {
         </div>
       ) : notifs.length === 0 ? (
         <div className="empty-state">
-          <div className="empty-state-icon">🔔</div>
+          <div className="empty-state-icon"><Bell size={48} strokeWidth={1.5} color="var(--text-muted)" /></div>
           <p style={{ fontWeight: 600 }}>Chưa có thông báo nào</p>
           <p style={{ fontSize: '0.875rem' }}>Các thông báo gia hạn sẽ xuất hiện ở đây</p>
         </div>
@@ -78,7 +78,7 @@ export default function NotificationsPage() {
               onClick={() => notif.status === 'UNREAD' && markOneMutation.mutate(notif.id)}
               style={{
                 background: notif.status === 'UNREAD' ? 'var(--primary-light)' : 'var(--bg-card)',
-                border: `1.5px solid ${notif.status === 'UNREAD' ? 'var(--primary)22' : 'var(--border-light)'}`,
+                border: `1px solid ${notif.status === 'UNREAD' ? 'var(--primary)' : 'var(--border)'}`,
                 borderRadius: 'var(--radius-md)',
                 padding: '14px 18px',
                 cursor: notif.status === 'UNREAD' ? 'pointer' : 'default',
@@ -86,8 +86,8 @@ export default function NotificationsPage() {
                 transition: 'var(--transition)',
               }}
             >
-              <div style={{ fontSize: '1.3rem', flexShrink: 0, marginTop: 2 }}>
-                {TYPE_EMOJI[notif.type] || '📢'}
+              <div style={{ flexShrink: 0, marginTop: 2, padding: 8, background: 'var(--bg)', borderRadius: 8, border: '1px solid var(--border-light)' }}>
+                {TYPE_ICON[notif.type] || <Megaphone size={18} color="var(--primary)" />}
               </div>
               <div style={{ flex: 1 }}>
                 <p style={{ fontSize: '0.9rem', color: 'var(--text-primary)', lineHeight: 1.5, fontWeight: notif.status === 'UNREAD' ? 600 : 400 }}>

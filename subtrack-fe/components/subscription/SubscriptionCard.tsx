@@ -1,13 +1,14 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { AlertTriangle, CheckCircle, XCircle, RotateCcw, ExternalLink, Copy } from 'lucide-react';
+import { AlertTriangle, CheckCircle, XCircle, RotateCcw, ExternalLink, Copy, Trash2 } from 'lucide-react';
 import { formatVND, categoryLabel, usageStatusLabel, billingCycleLabel } from '@/lib/utils';
 import type { Subscription, ActionType } from '@/lib/types';
 
 interface SubscriptionCardProps {
   subscription: Subscription;
   onAction: (id: string, action: ActionType) => void;
+  onDelete?: (id: string) => void;
   loading?: boolean;
 }
 
@@ -17,7 +18,7 @@ const USAGE_CONFIG = {
   UNUSED: { color: 'var(--accent-red)', bg: 'var(--accent-red-light)', label: 'Không dùng' },
 };
 
-export default function SubscriptionCard({ subscription: sub, onAction, loading }: SubscriptionCardProps) {
+export default function SubscriptionCard({ subscription: sub, onAction, onDelete, loading }: SubscriptionCardProps) {
   const usage = USAGE_CONFIG[sub.usageStatus];
   const hasWaste = sub.wasteCost > 0;
   const isCancelled = sub.cancelled;
@@ -172,6 +173,16 @@ export default function SubscriptionCard({ subscription: sub, onAction, loading 
               <RotateCcw size={13} /> Kích hoạt lại
             </button>
           )}
+          {onDelete && (
+            <button
+              className="btn btn-ghost btn-sm"
+              style={{ color: 'var(--accent-red)' }}
+              onClick={() => onDelete(sub.id)}
+              disabled={loading}
+            >
+              <Trash2 size={13} /> Xóa
+            </button>
+          )}
         </div>
       )}
 
@@ -185,6 +196,16 @@ export default function SubscriptionCard({ subscription: sub, onAction, loading 
           >
             <RotateCcw size={13} /> Khôi phục
           </button>
+          {onDelete && (
+            <button
+              className="btn btn-danger btn-sm"
+              style={{ marginLeft: 8 }}
+              onClick={() => onDelete(sub.id)}
+              disabled={loading}
+            >
+              <Trash2 size={13} /> Xóa vĩnh viễn
+            </button>
+          )}
         </div>
       )}
     </motion.div>

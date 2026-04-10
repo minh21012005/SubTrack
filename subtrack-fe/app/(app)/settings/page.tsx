@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { getInitials } from '@/lib/utils';
-import { User, Shield, Bell, Crown, Lock } from 'lucide-react';
+import { User, Shield, Bell, Crown, Lock, CheckCircle2 } from 'lucide-react';
 import { authApi } from '@/lib/services';
 import { toast } from 'react-hot-toast';
 import { useAuth } from '@/lib/context/AuthContext';
@@ -69,9 +69,9 @@ export default function SettingsPage() {
           <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 20 }}>
             <div style={{
               width: 56, height: 56, borderRadius: '50%',
-              background: 'linear-gradient(135deg, var(--primary-light), var(--primary))',
+              background: 'var(--primary-light)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: '1.2rem', fontWeight: 800, color: 'var(--primary)',
+              fontSize: '1.2rem', fontWeight: 800, color: 'var(--primary-dark)',
               flexShrink: 0,
             }}>
               {user ? getInitials(user.name || user.email) : '?'}
@@ -87,8 +87,8 @@ export default function SettingsPage() {
             </div>
           </div>
 
-          <div style={{ background: 'var(--bg)', borderRadius: 'var(--radius-sm)', padding: '12px 16px', fontSize: '0.875rem', color: 'var(--text-secondary)' }}>
-            🔔 Nhắc nhở gia hạn trước <strong>{user?.reminderDaysBefore || 7} ngày</strong>
+          <div style={{ background: 'var(--bg)', borderRadius: 'var(--radius-sm)', padding: '12px 16px', fontSize: '0.875rem', color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: 8 }}>
+            <Bell size={16} color="var(--accent-orange)" /> Nhắc nhở gia hạn trước <strong>{user?.reminderDaysBefore || 7} ngày</strong>
           </div>
 
         </div>
@@ -104,14 +104,14 @@ export default function SettingsPage() {
             {/* Free plan */}
             <div style={{
               padding: '16px', borderRadius: 'var(--radius-md)',
-              border: user?.planType !== 'PREMIUM' ? '2px solid var(--primary)' : '1.5px solid var(--border)',
+              border: user?.planType !== 'PREMIUM' ? '2px solid var(--primary)' : '1px solid var(--border)',
               background: user?.planType !== 'PREMIUM' ? 'var(--primary-light)' : '#fff',
             }}>
               <div style={{ fontWeight: 700, marginBottom: 4 }}>Free</div>
               <div style={{ fontSize: '1.3rem', fontWeight: 900, marginBottom: 8 }}>0đ<span style={{ fontSize: '0.8rem', fontWeight: 500 }}>/tháng</span></div>
               {['5 subscription', 'Dashboard cơ bản', 'Waste detection'].map((f) => (
                 <div key={f} style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', display: 'flex', gap: 6, marginBottom: 4 }}>
-                  <span style={{ color: 'var(--accent-green)' }}>✓</span> {f}
+                  <CheckCircle2 size={14} color="var(--accent-green)" /> {f}
                 </div>
               ))}
               {user?.planType !== 'PREMIUM' && <div className="badge badge-purple" style={{ marginTop: 8 }}>Gói hiện tại</div>}
@@ -120,8 +120,8 @@ export default function SettingsPage() {
             {/* Premium plan */}
             <div style={{
               padding: '16px', borderRadius: 'var(--radius-md)',
-              border: user?.planType === 'PREMIUM' ? '2px solid var(--primary)' : '1.5px solid var(--border)',
-              background: user?.planType === 'PREMIUM' ? 'var(--primary-light)' : 'linear-gradient(135deg, #fafaff, #f5f0ff)',
+              border: user?.planType === 'PREMIUM' ? '2px solid var(--primary)' : '1px solid var(--border)',
+              background: user?.planType === 'PREMIUM' ? 'var(--primary-light)' : 'var(--bg)',
             }}>
               <div style={{ fontWeight: 700, marginBottom: 4, display: 'flex', alignItems: 'center', gap: 6 }}>
                 <Crown size={14} color="var(--accent-yellow)" /> Premium
@@ -129,7 +129,7 @@ export default function SettingsPage() {
               <div style={{ fontSize: '1.3rem', fontWeight: 900, marginBottom: 8 }}>29k–79k<span style={{ fontSize: '0.8rem', fontWeight: 500 }}>/tháng</span></div>
               {['Không giới hạn subscription', 'Advanced waste analysis', 'Smart alerts', 'Phân tích nâng cao'].map((f) => (
                 <div key={f} style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', display: 'flex', gap: 6, marginBottom: 4 }}>
-                  <span style={{ color: 'var(--accent-green)' }}>✓</span> {f}
+                  <CheckCircle2 size={14} color="var(--accent-green)" /> {f}
                 </div>
               ))}
               {user?.planType === 'PREMIUM'

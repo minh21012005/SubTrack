@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, Search, Filter, Trash2, Loader2 } from 'lucide-react';
+import { Plus, Search, Filter, Trash2, Loader2, AlertTriangle, CheckCircle, XCircle, Inbox } from 'lucide-react';
 import Link from 'next/link';
 import { subscriptionApi } from '@/lib/services';
 import SubscriptionCard from '@/components/subscription/SubscriptionCard';
@@ -12,15 +12,16 @@ import type { ActionType } from '@/lib/types';
 
 const FILTERS = [
   { value: 'all', label: 'Tất cả' },
-  { value: 'waste', label: '🔥 Lãng phí' },
-  { value: 'active', label: '✅ Đang dùng' },
-  { value: 'cancelled', label: '❌ Đã hủy' },
+  { value: 'waste', label: 'Lãng phí' },
+  { value: 'active', label: 'Đang dùng' },
+  { value: 'cancelled', label: 'Đã hủy' },
 ];
 
 export default function SubscriptionsPage() {
   const queryClient = useQueryClient();
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState('all');
+  const [deleteId, setDeleteId] = useState<string | null>(null);
 
   const { data: subs = [], isLoading } = useQuery({
     queryKey: ['subscriptions'],
@@ -101,7 +102,7 @@ export default function SubscriptionsPage() {
         </div>
       ) : filtered.length === 0 ? (
         <div className="empty-state">
-          <div className="empty-state-icon">{search ? '🔍' : '📭'}</div>
+          <div className="empty-state-icon">{search ? <Search size={48} strokeWidth={1.5} color="var(--text-muted)" /> : <Inbox size={48} strokeWidth={1.5} color="var(--text-muted)" />}</div>
           <p style={{ fontWeight: 600 }}>{search ? 'Không tìm thấy kết quả' : 'Chưa có subscription nào'}</p>
           {!search && (
             <Link href="/add" className="btn btn-primary btn-sm" style={{ marginTop: 8 }}>
@@ -117,32 +118,53 @@ export default function SubscriptionsPage() {
                 <SubscriptionCard
                   subscription={sub}
                   onAction={(id, action) => actionMutation.mutate({ id, action })}
-                  loading={actionMutation.isPending}
+                  onDelete={(id) => setDeleteId(id)}
+                  loading={actionMutation.isPending || deleteMutation.isPending}
                 />
-                {/* Delete button */}
-                <button
-                  onClick={() => {
-                    if (confirm(`Xóa "${sub.name}"? Thao tác này không thể hoàn tác.`)) {
-                      deleteMutation.mutate(sub.id);
-                    }
-                  }}
-                  disabled={deleteMutation.isPending}
-                  title="Xóa subscription"
-                  style={{
-                    position: 'absolute', top: 16, right: 16,
-                    background: 'none', border: 'none', cursor: 'pointer',
-                    color: 'var(--text-muted)', padding: 4, borderRadius: 6,
-                    transition: 'var(--transition)',
-                  }}
-                  onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--accent-red)')}
-                  onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--text-muted)')}
-                >
-                  <Trash2 size={15} />
-                </button>
               </div>
             ))}
           </div>
         </AnimatePresence>
+      )}
+
+      {/* Delete Modal */}
+      {deleteId && (
+        <div style={{
+          position: 'fixed', inset: 0, background: 'rgba(15, 23, 42, 0.4)', zIndex: 100,
+          display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16,
+          backdropFilter: 'blur(4px)', animation: 'fadeIn 0.2s ease-out'
+        }}>
+          <div style={{
+            background: 'white', borderRadius: 'var(--radius-xl)', width: '100%', maxWidth: 400,
+            padding: '32px 24px', boxShadow: 'var(--shadow-lg)'
+          }}>
+            <h2 style={{ fontWeight: 800, fontSize: '1.25rem', marginBottom: 12, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: 8 }}>
+              <Trash2 size={20} color="var(--accent-red)" /> Xác nhận xóa
+            </h2>
+            <p style={{ color: 'var(--text-secondary)', marginBottom: 24, fontSize: '0.95rem', lineHeight: 1.5 }}>
+              Bạn có chắc chắn muốn xóa subscription này không? Thao tác này sẽ xóa mọi dữ liệu liên quan và <strong>không thể hoàn tác</strong>.
+            </p>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 12 }}>
+              <button 
+                className="btn btn-outline" 
+                onClick={() => setDeleteId(null)} 
+                disabled={deleteMutation.isPending}
+              >
+                Hủy
+              </button>
+              <button 
+                className="btn btn-danger" 
+                onClick={() => { 
+                  deleteMutation.mutate(deleteId); 
+                  setDeleteId(null); 
+                }} 
+                disabled={deleteMutation.isPending}
+              >
+                Xóa vĩnh viễn
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

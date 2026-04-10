@@ -19,15 +19,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       <main className="content-area">
         <div className="mobile-header">
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <div style={{
-              width: 32, height: 32,
-              background: 'linear-gradient(135deg, var(--primary), #a78bfa)',
-              borderRadius: 8,
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-            }}>
-              <TrendingUp size={16} color="white" />
-            </div>
-            <div style={{ fontWeight: 800, fontSize: '1rem', color: 'var(--text-primary)' }}>SubTrack</div>
+            <img src="/image.jpg" alt="Logo" width={32} height={32} style={{ borderRadius: 8, border: '1px solid var(--border)', objectFit: 'cover' }} />
+            <div style={{ fontWeight: 800, fontSize: '1rem', color: 'var(--text-primary)', letterSpacing: '-0.02em' }}>SubTrack</div>
           </div>
           <button 
             className="btn btn-ghost" 

@@ -34,16 +34,9 @@ export default function Sidebar({ isOpen, onClose }: { isOpen?: boolean; onClose
         style={{ padding: '28px 24px 20px', borderBottom: '1px solid var(--border-light)', cursor: 'pointer', position: 'relative' }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <div style={{
-            width: 36, height: 36,
-            background: 'linear-gradient(135deg, var(--primary), #a78bfa)',
-            borderRadius: 10,
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-          }}>
-            <TrendingUp size={18} color="white" />
-          </div>
+          <img src="/image.jpg" alt="Logo" width={36} height={36} style={{ borderRadius: 8, border: '1px solid var(--border)', objectFit: 'cover' }} />
           <div>
-            <div style={{ fontWeight: 800, fontSize: '1.1rem', color: 'var(--text-primary)' }}>SubTrack</div>
+            <div style={{ fontWeight: 800, fontSize: '1.1rem', color: 'var(--text-primary)', letterSpacing: '-0.02em' }}>SubTrack</div>
             <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontWeight: 500 }}>Chống lãng phí</div>
           </div>
         </div>
@@ -99,7 +92,7 @@ export default function Sidebar({ isOpen, onClose }: { isOpen?: boolean; onClose
               }}
               onClick={onClose}
             >
-              <Icon size={18} />
+              <Icon size={18} strokeWidth={1.75} />
               {label}
             </Link>
           );

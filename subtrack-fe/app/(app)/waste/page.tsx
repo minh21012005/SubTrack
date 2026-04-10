@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import { wasteApi, subscriptionApi } from '@/lib/services';
 import { formatVND, categoryLabel } from '@/lib/utils';
-import { TrendingDown, Zap, AlertTriangle, Copy, RefreshCw } from 'lucide-react';
+import { TrendingDown, Zap, AlertTriangle, Copy, RefreshCw, CheckCircle } from 'lucide-react';
 import type { ActionType, WasteItem } from '@/lib/types';
 import Link from 'next/link';
 
@@ -53,7 +53,7 @@ export default function WastePage() {
       {noWaste ? (
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
           className="card" style={{ textAlign: 'center', padding: '64px 32px' }}>
-          <div style={{ fontSize: '4rem', marginBottom: 16 }}>🎉</div>
+          <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'center' }}><CheckCircle size={48} strokeWidth={1.5} color="var(--accent-green)" /></div>
           <h2 style={{ fontSize: '1.5rem', fontWeight: 800, marginBottom: 8 }}>Không phát hiện lãng phí!</h2>
           <p style={{ color: 'var(--text-secondary)', maxWidth: 400, margin: '0 auto' }}>
             Tất cả subscription của bạn đều đang được sử dụng hiệu quả. Tuyệt vời!
@@ -65,22 +65,22 @@ export default function WastePage() {
           {/* Summary banner */}
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
             style={{
-              background: 'linear-gradient(135deg, #fff1f1, #ffe4e4)',
-              border: '1.5px solid #fca5a5',
+              background: 'var(--accent-red-light)',
+              border: '1px solid var(--accent-red-light)',
               borderRadius: 'var(--radius-xl)',
               padding: '28px 32px',
               display: 'flex', gap: 32, flexWrap: 'wrap', alignItems: 'center',
             }}
           >
             <div style={{ flex: 1, minWidth: 200 }}>
-              <div style={{ fontSize: '0.85rem', color: '#991b1b', fontWeight: 600, marginBottom: 6 }}>
-                💸 TỔNG LÃNG PHÍ
+              <div style={{ fontSize: '0.85rem', color: 'var(--accent-red)', fontWeight: 600, marginBottom: 6 }}>
+                TỔNG LÃNG PHÍ
               </div>
               <div style={{ fontSize: '2.5rem', fontWeight: 900, color: 'var(--accent-red)', letterSpacing: '-0.03em' }}>
                 ~{formatVND(data.totalWasteCost)}
                 <span style={{ fontSize: '1rem', fontWeight: 600 }}>/tháng</span>
               </div>
-              <div style={{ fontSize: '0.875rem', color: '#b91c1c', marginTop: 4 }}>
+              <div style={{ fontSize: '0.875rem', color: 'var(--accent-red)', marginTop: 4 }}>
                 {data.wastePercentage}% tổng chi tiêu · {formatVND(data.totalWasteCost * 12)}/năm nếu không thay đổi
               </div>
             </div>
@@ -94,7 +94,7 @@ export default function WastePage() {
           {/* Unused subscriptions */}
           {data.unusedItems.length > 0 && (
             <Section
-              title={`🔴 Không sử dụng (${data.unusedItems.length})`}
+              title={`Không sử dụng (${data.unusedItems.length})`}
               subtitle="100% lãng phí — Nên hủy ngay"
               items={data.unusedItems}
               onAction={(id, action) => actionMutation.mutate({ id, action })}
@@ -105,7 +105,7 @@ export default function WastePage() {
           {/* Rarely used */}
           {data.rarelyUsedItems.length > 0 && (
             <Section
-              title={`🟡 Hiếm khi sử dụng (${data.rarelyUsedItems.length})`}
+              title={`Hiếm khi sử dụng (${data.rarelyUsedItems.length})`}
               subtitle="50% lãng phí — Xem xét cắt giảm"
               items={data.rarelyUsedItems}
               onAction={(id, action) => actionMutation.mutate({ id, action })}
@@ -184,8 +184,8 @@ export default function WastePage() {
 
               <div style={{ marginTop: 16, padding: '14px 18px', background: 'var(--accent-green-light)', border: '1.5px solid var(--accent-green)', borderRadius: 'var(--radius-md)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div>
-                  <div style={{ fontWeight: 700, color: 'var(--accent-green)' }}>💡 Tổng tiết kiệm nếu hủy tất cả</div>
-                  <div style={{ fontSize: '0.85rem', color: '#15803d' }}>
+                  <div style={{ fontWeight: 700, color: 'var(--accent-green)', display: 'flex', alignItems: 'center', gap: 6 }}><Zap size={16} /> Tổng tiết kiệm nếu hủy tất cả</div>
+                  <div style={{ fontSize: '0.85rem', color: 'var(--accent-green)' }}>
                     {data.suggestions.length} subscription · {formatVND(data.potentialSavings * 12)}/năm
                   </div>
                 </div>
@@ -205,7 +205,7 @@ function WasteStat({ label, value, color }: { label: string; value: number; colo
   return (
     <div style={{ textAlign: 'center' }}>
       <div style={{ fontSize: '1.75rem', fontWeight: 900, color }}>{value}</div>
-      <div style={{ fontSize: '0.75rem', color: '#b91c1c' }}>{label}</div>
+      <div style={{ fontSize: '0.75rem', color: 'var(--accent-red)' }}>{label}</div>
     </div>
   );
 }

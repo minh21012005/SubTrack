@@ -2,7 +2,7 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
-import { RefreshCw, Loader2, Plus } from 'lucide-react';
+import { RefreshCw, Loader2, Plus, CreditCard, AlertTriangle, LayoutDashboard, Zap, Info } from 'lucide-react';
 import Link from 'next/link';
 import { dashboardApi, subscriptionApi } from '@/lib/services';
 import ShockHero from '@/components/dashboard/ShockHero';
@@ -40,7 +40,7 @@ export default function DashboardPage() {
   if (error || !data) {
     return (
       <div className="empty-state">
-        <div className="empty-state-icon">😕</div>
+        <div className="empty-state-icon"><Info size={48} strokeWidth={1.5} color="var(--text-muted)" /></div>
         <p>Không thể tải dashboard. Vui lòng thử lại.</p>
         <button className="btn btn-outline btn-sm" onClick={() => refetch()}>
           <RefreshCw size={14} /> Thử lại
@@ -77,7 +77,7 @@ export default function DashboardPage() {
           className="card"
           style={{ textAlign: 'center', padding: '64px 32px' }}
         >
-          <div style={{ fontSize: '4rem', marginBottom: 16 }}>💸</div>
+          <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'center' }}><CreditCard size={48} strokeWidth={1.5} color="var(--primary)" /></div>
           <h2 style={{ fontSize: '1.5rem', fontWeight: 800, marginBottom: 8 }}>Bắt đầu theo dõi subscription</h2>
           <p style={{ color: 'var(--text-secondary)', marginBottom: 28, maxWidth: 420, margin: '0 auto 28px' }}>
             Thêm các subscription bạn đang trả tiền để khám phá bạn đang tiêu bao nhiêu mỗi tháng.
@@ -98,8 +98,8 @@ export default function DashboardPage() {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               style={{
-                background: 'linear-gradient(135deg, var(--primary-light), #ede9fe)',
-                border: '1.5px solid var(--primary)',
+                background: 'var(--primary-light)',
+                border: '1px solid var(--primary)',
                 borderRadius: 'var(--radius-md)',
                 padding: '16px 20px',
                 display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16,
@@ -107,7 +107,7 @@ export default function DashboardPage() {
             >
               <div>
                 <div style={{ fontWeight: 700, color: 'var(--primary)', marginBottom: 2 }}>
-                  ⭐ Bạn đã dùng hết {data.freeLimit} subscription miễn phí
+                  <span style={{ marginRight: 6 }}>⭐</span> Bạn đã dùng hết {data.freeLimit} subscription miễn phí
                 </div>
                 <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
                   Nâng cấp Premium để thêm không giới hạn và phân tích nâng cao
@@ -125,7 +125,7 @@ export default function DashboardPage() {
               sub={`${formatVND(data.totalYearlyCost)} / năm`}
               color="var(--primary)"
               bg="var(--primary-light)"
-              emoji="💰"
+              icon={<CreditCard size={20} color="var(--primary)" />}
             />
             <StatCard
               label="Đang lãng phí"
@@ -133,7 +133,7 @@ export default function DashboardPage() {
               sub={`${data.wastePercentage}% tổng chi tiêu`}
               color="var(--accent-red)"
               bg="var(--accent-red-light)"
-              emoji="🔥"
+              icon={<AlertTriangle size={20} color="var(--accent-red)" />}
             />
             <StatCard
               label="Subscription"
@@ -141,7 +141,7 @@ export default function DashboardPage() {
               sub={`${data.activeCount} đang dùng · ${data.cancelledCount} đã hủy`}
               color="var(--accent-blue)"
               bg="#EFF6FF"
-              emoji="📦"
+              icon={<LayoutDashboard size={20} color="var(--accent-blue)" />}
             />
             <StatCard
               label="Tiết kiệm được"
@@ -149,7 +149,7 @@ export default function DashboardPage() {
               sub="nếu hủy hết lãng phí"
               color="var(--accent-green)"
               bg="var(--accent-green-light)"
-              emoji="💡"
+              icon={<Zap size={20} color="var(--accent-green)" />}
             />
           </div>
 
@@ -166,13 +166,13 @@ export default function DashboardPage() {
               animate={{ opacity: 1 }}
               style={{
                 background: 'var(--accent-orange-light)',
-                border: '1.5px solid var(--accent-orange)',
+                border: '1px solid var(--accent-orange)',
                 borderRadius: 'var(--radius-md)',
                 padding: '16px 20px',
               }}
             >
               <div style={{ fontWeight: 700, color: 'var(--accent-orange)', marginBottom: 6 }}>
-                ⚠️ Phát hiện trùng lặp danh mục
+                <AlertTriangle size={16} /> Phát hiện trùng lặp danh mục
               </div>
               <div style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>
                 Bạn có nhiều subscription trong cùng danh mục:{' '}
@@ -186,7 +186,7 @@ export default function DashboardPage() {
             <div>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
                 <h2 style={{ fontSize: '1.1rem', fontWeight: 800 }}>
-                  🔥 Cần xem xét ({data.wasteSubscriptions.length})
+                  <AlertTriangle size={18} color="var(--accent-red)" /> Cần xem xét ({data.wasteSubscriptions.length})
                 </h2>
                 <Link href="/waste" style={{ color: 'var(--primary)', fontSize: '0.875rem', fontWeight: 600 }}>
                   Xem tất cả →
@@ -210,8 +210,8 @@ export default function DashboardPage() {
   );
 }
 
-function StatCard({ label, value, sub, color, bg, emoji }: {
-  label: string; value: string; sub: string; color: string; bg: string; emoji: string;
+function StatCard({ label, value, sub, color, bg, icon }: {
+  label: string; value: string; sub: string; color: string; bg: string; icon: React.ReactNode;
 }) {
   return (
     <motion.div
@@ -226,7 +226,7 @@ function StatCard({ label, value, sub, color, bg, emoji }: {
           background: bg, display: 'flex', alignItems: 'center', justifyContent: 'center',
           fontSize: '1.1rem', flexShrink: 0,
         }}>
-          {emoji}
+          {icon}
         </div>
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 500, marginBottom: 2 }}>{label}</div>
