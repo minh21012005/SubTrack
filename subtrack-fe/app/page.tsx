@@ -2,15 +2,17 @@
 
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { TrendingUp, ArrowRight, CheckCircle2, Zap, ShieldAlert, CreditCard } from 'lucide-react';
+import { TrendingUp, ArrowRight, CheckCircle2, Zap, ShieldAlert, CreditCard, LogOut } from 'lucide-react';
+import { useAuth } from '@/lib/context/AuthContext';
 
 export default function LandingPage() {
+  const { user, isLoggedIn, isInitializing, logout } = useAuth();
+
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: '#FAFAFF' }}>
       
       {/* Navbar */}
-      <header style={{ 
-        padding: '20px 48px', 
+      <header className="landing-header" style={{ 
         display: 'flex', 
         justifyContent: 'space-between', 
         alignItems: 'center',
@@ -21,7 +23,7 @@ export default function LandingPage() {
         top: 0,
         zIndex: 50
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+        <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none' }}>
           <div style={{
             width: 36, height: 36,
             background: 'linear-gradient(135deg, var(--primary), #a78bfa)',
@@ -31,12 +33,45 @@ export default function LandingPage() {
             <TrendingUp size={20} color="white" />
           </div>
           <span style={{ fontWeight: 900, fontSize: '1.25rem', color: 'var(--text-primary)' }}>SubTrack</span>
-        </div>
+        </Link>
         <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
-          <Link href="/login" style={{ fontWeight: 600, color: 'var(--text-secondary)', padding: '8px 16px' }}>Đăng nhập</Link>
-          <Link href="/register" className="btn btn-primary" style={{ boxShadow: 'var(--shadow-glow-purple)' }}>
-            Dùng thử miễn phí
-          </Link>
+          {isInitializing ? (
+            <div style={{ width: 140, height: 36 }} /> /* Placeholder for hydration */
+          ) : isLoggedIn ? (
+            <>
+              <Link href="/dashboard" style={{ fontWeight: 600, color: 'var(--text-secondary)', padding: '8px 16px', textDecoration: 'none' }}>
+                Xin chào, {user?.name}
+              </Link>
+              <button 
+                onClick={logout}
+                className="desktop-only"
+                style={{ 
+                  display: 'flex', alignItems: 'center', gap: 6,
+                  padding: '8px 16px', fontWeight: 600, fontSize: '0.9rem',
+                  color: 'var(--text-secondary)', background: 'transparent', border: 'none',
+                  borderRadius: 'var(--radius-full)', cursor: 'pointer',
+                  transition: 'background 0.2s, color 0.2s'
+                }}
+                onMouseEnter={e => {
+                  e.currentTarget.style.background = 'var(--accent-red-light)';
+                  e.currentTarget.style.color = 'var(--accent-red)';
+                }}
+                onMouseLeave={e => {
+                  e.currentTarget.style.background = 'transparent';
+                  e.currentTarget.style.color = 'var(--text-secondary)';
+                }}
+              >
+                <LogOut size={16} /> Đăng xuất
+              </button>
+            </>
+          ) : (
+            <>
+              <Link href="/login" className="desktop-only" style={{ fontWeight: 600, color: 'var(--text-secondary)', padding: '8px 16px' }}>Đăng nhập</Link>
+              <Link href="/register" className="btn btn-primary" style={{ boxShadow: 'var(--shadow-glow-purple)' }}>
+                Bắt đầu ngay
+              </Link>
+            </>
+          )}
         </div>
       </header>
 
@@ -72,7 +107,7 @@ export default function LandingPage() {
           </p>
 
           <div style={{ display: 'flex', gap: 16, justifyContent: 'center', flexWrap: 'wrap' }}>
-            <Link href="/register" className="btn btn-primary btn-lg" style={{ fontSize: '1.1rem', padding: '16px 32px' }}>
+            <Link href={isLoggedIn ? "/dashboard" : "/login"} className="btn btn-primary btn-lg" style={{ fontSize: '1.1rem', padding: '16px 32px' }}>
               Kiểm tra ngay <ArrowRight size={20} />
             </Link>
           </div>

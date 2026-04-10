@@ -2,6 +2,7 @@ package com.subtrack.controller;
 
 import com.subtrack.dto.request.LoginRequest;
 import com.subtrack.dto.request.RegisterRequest;
+import com.subtrack.dto.request.ChangePasswordRequest;
 import com.subtrack.dto.response.ApiResponse;
 import com.subtrack.dto.response.AuthResponse;
 import com.subtrack.dto.response.UserResponse;
@@ -37,5 +38,13 @@ public class AuthController {
     public ResponseEntity<ApiResponse<UserResponse>> getMe(@AuthenticationPrincipal UserDetails userDetails) {
         UserResponse user = authService.getCurrentUser(userDetails.getUsername());
         return ResponseEntity.ok(ApiResponse.ok(user));
+    }
+
+    @PutMapping("/password")
+    public ResponseEntity<ApiResponse<Void>> changePassword(
+            @AuthenticationPrincipal UserDetails userDetails,
+            @Valid @RequestBody ChangePasswordRequest request) {
+        authService.changePassword(userDetails.getUsername(), request);
+        return ResponseEntity.ok(ApiResponse.ok("Đổi mật khẩu thành công", null));
     }
 }

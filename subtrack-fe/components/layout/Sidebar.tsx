@@ -4,9 +4,10 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import {
   LayoutDashboard, CreditCard, AlertTriangle,
-  Bell, Settings, LogOut, TrendingUp, Plus
+  Bell, Settings, LogOut, TrendingUp, Plus, X
 } from 'lucide-react';
-import { clearAuth, getSavedUser, getInitials } from '@/lib/utils';
+import { clearAuth, getInitials } from '@/lib/utils';
+import { useAuth } from '@/lib/context/AuthContext';
 
 const NAV_ITEMS = [
   { href: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
@@ -16,21 +17,22 @@ const NAV_ITEMS = [
   { href: '/settings', icon: Settings, label: 'Cài đặt' },
 ];
 
-export default function Sidebar() {
+export default function Sidebar({ isOpen, onClose }: { isOpen?: boolean; onClose?: () => void }) {
   const pathname = usePathname();
   const router = useRouter();
-  const user = getSavedUser();
+  const { user, logout } = useAuth();
 
   const handleLogout = () => {
-    clearAuth();
-    document.cookie = 'subtrack_token=; max-age=0; path=/';
-    router.push('/login');
+    logout();
   };
 
   return (
-    <aside className="sidebar">
+    <aside className={`sidebar ${isOpen ? 'open' : ''}`}>
       {/* Logo */}
-      <div style={{ padding: '28px 24px 20px', borderBottom: '1px solid var(--border-light)' }}>
+      <div
+        onClick={() => router.push('/')}
+        style={{ padding: '28px 24px 20px', borderBottom: '1px solid var(--border-light)', cursor: 'pointer', position: 'relative' }}
+      >
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <div style={{
             width: 36, height: 36,
@@ -45,6 +47,15 @@ export default function Sidebar() {
             <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontWeight: 500 }}>Chống lãng phí</div>
           </div>
         </div>
+        {onClose && (
+          <button 
+            className="btn btn-ghost mobile-only" 
+            onClick={(e) => { e.stopPropagation(); onClose(); }}
+            style={{ padding: 4, position: 'absolute', right: 16, top: 28 }}
+          >
+            <X size={20} />
+          </button>
+        )}
       </div>
 
       {/* Quick Add Button */}
@@ -86,6 +97,7 @@ export default function Sidebar() {
                   (e.currentTarget as HTMLElement).style.color = 'var(--text-secondary)';
                 }
               }}
+              onClick={onClose}
             >
               <Icon size={18} />
               {label}

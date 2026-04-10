@@ -2,6 +2,7 @@ package com.subtrack.service;
 
 import com.subtrack.dto.request.LoginRequest;
 import com.subtrack.dto.request.RegisterRequest;
+import com.subtrack.dto.request.ChangePasswordRequest;
 import com.subtrack.dto.response.AuthResponse;
 import com.subtrack.dto.response.UserResponse;
 import com.subtrack.entity.User;
@@ -84,6 +85,19 @@ public class AuthService {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new BadRequestException("Tài khoản không tồn tại"));
         return toUserResponse(user);
+    }
+
+    @Transactional
+    public void changePassword(String email, ChangePasswordRequest request) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new BadRequestException("Tài khoản không tồn tại"));
+
+        if (!passwordEncoder.matches(request.getOldPassword(), user.getPasswordHash())) {
+            throw new BadRequestException("Mật khẩu cũ không chính xác");
+        }
+
+        user.setPasswordHash(passwordEncoder.encode(request.getNewPassword()));
+        userRepository.save(user);
     }
 
     private UserResponse toUserResponse(User user) {

@@ -15,6 +15,9 @@ export const authApi = {
 
   me: () =>
     apiClient.get<ApiResponse<User>>('/api/auth/me'),
+
+  changePassword: (data: any) =>
+    apiClient.put<ApiResponse<void>>('/api/auth/password', data),
 };
 
 // ─── Dashboard ───────────────────────────────────────────────────────────────

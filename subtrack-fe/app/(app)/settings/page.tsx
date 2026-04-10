@@ -1,18 +1,44 @@
 'use client';
 
 import { useState } from 'react';
-import { getSavedUser, getInitials, clearAuth } from '@/lib/utils';
-import { useRouter } from 'next/navigation';
-import { User, Shield, Bell, Crown, LogOut } from 'lucide-react';
+import { getInitials } from '@/lib/utils';
+import { User, Shield, Bell, Crown, Lock } from 'lucide-react';
+import { authApi } from '@/lib/services';
+import { toast } from 'react-hot-toast';
+import { useAuth } from '@/lib/context/AuthContext';
 
 export default function SettingsPage() {
-  const router = useRouter();
-  const user = getSavedUser();
+  const { user } = useAuth();
+  const [oldPassword, setOldPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const handleLogout = () => {
-    clearAuth();
-    document.cookie = 'subtrack_token=; max-age=0; path=/';
-    router.push('/login');
+  const handleChangePassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (newPassword !== confirmPassword) {
+      toast.error('Nhập lại mật khẩu không khớp');
+      return;
+    }
+    if (newPassword.length < 6) {
+      toast.error('Mật khẩu mới phải có ít nhất 6 ký tự');
+      return;
+    }
+    
+    setIsChangingPassword(true);
+    try {
+      await authApi.changePassword({ oldPassword, newPassword });
+      toast.success('Đổi mật khẩu thành công');
+      setOldPassword('');
+      setNewPassword('');
+      setConfirmPassword('');
+      setIsModalOpen(false);
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || 'Lỗi khi đổi mật khẩu');
+    } finally {
+      setIsChangingPassword(false);
+    }
   };
 
   return (
@@ -26,9 +52,18 @@ export default function SettingsPage() {
 
         {/* Profile card */}
         <div className="card">
-          <div style={{ display: 'flex', alignItems: 'center', gap: 3, marginBottom: 20 }}>
-            <User size={18} color="var(--primary)" />
-            <h2 style={{ fontWeight: 700, fontSize: '1rem', marginLeft: 6 }}>Thông tin tài khoản</h2>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
+              <User size={18} color="var(--primary)" />
+              <h2 style={{ fontWeight: 700, fontSize: '1rem', marginLeft: 6 }}>Thông tin tài khoản</h2>
+            </div>
+            <button 
+              className="btn btn-outline btn-sm" 
+              onClick={() => setIsModalOpen(true)}
+              style={{ padding: '6px 12px', fontWeight: 600, color: 'var(--text-primary)' }}
+            >
+              <Lock size={14} /> Đổi mật khẩu
+            </button>
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 20 }}>
@@ -55,6 +90,7 @@ export default function SettingsPage() {
           <div style={{ background: 'var(--bg)', borderRadius: 'var(--radius-sm)', padding: '12px 16px', fontSize: '0.875rem', color: 'var(--text-secondary)' }}>
             🔔 Nhắc nhở gia hạn trước <strong>{user?.reminderDaysBefore || 7} ngày</strong>
           </div>
+
         </div>
 
         {/* Plan card */}
@@ -105,15 +141,82 @@ export default function SettingsPage() {
 
 
 
-        {/* Danger zone */}
-        <div className="card" style={{ border: '1.5px solid #fca5a5' }}>
-          <h2 style={{ fontWeight: 700, fontSize: '1rem', color: 'var(--accent-red)', marginBottom: 12 }}>Đăng xuất</h2>
-
-          <button className="btn btn-danger btn-sm" onClick={handleLogout}>
-            <LogOut size={14} /> Đăng xuất
-          </button>
         </div>
-      </div>
+
+      {/* Change Password Modal */}
+      {isModalOpen && (
+        <div style={{
+          position: 'fixed', inset: 0, background: 'rgba(17, 24, 39, 0.4)', zIndex: 100,
+          display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16,
+          backdropFilter: 'blur(8px)', animation: 'fadeIn 0.2s ease-out'
+        }}>
+          <div style={{
+            background: 'white', borderRadius: 'var(--radius-xl)', width: '100%', maxWidth: 420,
+            padding: 32, boxShadow: 'var(--shadow-lg)', position: 'relative'
+          }}>
+            <h2 style={{ fontWeight: 800, fontSize: '1.5rem', marginBottom: 24, display: 'flex', alignItems: 'center', gap: 12, color: 'var(--text-primary)' }}>
+              <div style={{ width: 40, height: 40, borderRadius: 12, background: 'var(--primary-light)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <Lock size={20} color="var(--primary)" />
+              </div>
+              Đổi mật khẩu
+            </h2>
+            
+            <form onSubmit={handleChangePassword} style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+              <div className="form-group">
+                <label className="form-label">Mật khẩu hiện tại</label>
+                <input 
+                  type="password" 
+                  className="form-input" 
+                  placeholder="Nhập mật khẩu hiện tại" 
+                  value={oldPassword}
+                  onChange={e => setOldPassword(e.target.value)}
+                  required
+                />
+              </div>
+              <div className="form-group">
+                <label className="form-label">Mật khẩu mới</label>
+                <input 
+                  type="password" 
+                  className="form-input" 
+                  placeholder="Mật khẩu mới (ít nhất 6 ký tự)" 
+                  value={newPassword}
+                  onChange={e => setNewPassword(e.target.value)}
+                  required
+                />
+              </div>
+              <div className="form-group">
+                <label className="form-label">Nhập lại mật khẩu mới</label>
+                <input 
+                  type="password" 
+                  className="form-input" 
+                  placeholder="Xác nhận mật khẩu mới" 
+                  value={confirmPassword}
+                  onChange={e => setConfirmPassword(e.target.value)}
+                  required
+                />
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 12, marginTop: 12 }}>
+                <button 
+                  type="button" 
+                  className="btn btn-outline" 
+                  onClick={() => {
+                    setIsModalOpen(false);
+                    setOldPassword('');
+                    setNewPassword('');
+                    setConfirmPassword('');
+                  }}
+                  disabled={isChangingPassword}
+                >
+                  Hủy
+                </button>
+                <button type="submit" className="btn btn-primary" disabled={isChangingPassword}>
+                  {isChangingPassword ? 'Đang cập nhật...' : 'Xác nhận'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
