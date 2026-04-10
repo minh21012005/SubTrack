@@ -107,6 +107,8 @@ public class AuthService {
                 .email(user.getEmail())
                 .name(user.getName())
                 .planType(user.getPlanType())
+                .billingPeriod(user.getBillingPeriod())
+                .planExpiresAt(user.getPlanExpiresAt())
                 .role(user.getRole())
                 .reminderDaysBefore(user.getReminderDaysBefore())
                 .build();

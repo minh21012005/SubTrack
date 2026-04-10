@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import {
   LayoutDashboard, CreditCard, AlertTriangle,
-  Bell, Settings, LogOut, TrendingUp, Plus, X, Shield, Star
+  Settings, LogOut, TrendingUp, Plus, X, Shield, Star
 } from 'lucide-react';
 import { clearAuth, getInitials } from '@/lib/utils';
 import { useAuth } from '@/lib/context/AuthContext';
@@ -13,7 +13,7 @@ const NAV_ITEMS = [
   { href: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
   { href: '/subscriptions', icon: CreditCard, label: 'Subscriptions' },
   { href: '/waste', icon: AlertTriangle, label: 'Waste Analysis' },
-  { href: '/notifications', icon: Bell, label: 'Thông báo' },
+  { href: '/billing', icon: TrendingUp, label: 'Lịch sử thanh toán' },
   { href: '/settings', icon: Settings, label: 'Cài đặt' },
 ];
 

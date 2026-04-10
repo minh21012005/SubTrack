@@ -40,6 +40,9 @@ public class PaymentRequest {
     @Column(nullable = false, precision = 15, scale = 2)
     private BigDecimal amount;
 
+    @Column(name = "transfer_content")
+    private String transferContent;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     @Builder.Default

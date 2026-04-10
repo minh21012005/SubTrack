@@ -63,9 +63,6 @@ export default function DashboardPage() {
           <button className="btn btn-ghost btn-sm" onClick={() => refetch()}>
             <RefreshCw size={14} /> Làm mới
           </button>
-          <Link href="/add" className="btn btn-primary btn-sm">
-            <Plus size={14} /> Thêm
-          </Link>
         </div>
       </div>
 
@@ -113,8 +110,49 @@ export default function DashboardPage() {
                   Nâng cấp Premium để thêm không giới hạn và phân tích nâng cao
                 </div>
               </div>
-              <button className="btn btn-primary btn-sm">Nâng cấp</button>
+              <Link href="/pricing" className="btn btn-primary btn-sm">Nâng cấp</Link>
             </motion.div>
+          )}
+
+          {/* Premium expiration warning */}
+          {user?.planType === 'PREMIUM' && user.planExpiresAt && (
+            (() => {
+              const daysLeft = Math.ceil((new Date(user.planExpiresAt).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
+              if (daysLeft <= 7 && daysLeft >= 0) {
+                return (
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.98 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    style={{
+                      background: 'linear-gradient(135deg, #FFF7ED, #FEF3C7)',
+                      border: '1.5px solid #FCD34D',
+                      borderRadius: 'var(--radius-md)',
+                      padding: '12px 16px',
+                      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                      marginBottom: 16,
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                      <div style={{ width: 36, height: 36, borderRadius: '50%', background: '#FEF3C7', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <Zap size={18} color="#D97706" />
+                      </div>
+                      <div>
+                        <div style={{ fontWeight: 700, color: '#92400E', fontSize: '0.9rem' }}>
+                          Gói Premium sắp hết hạn
+                        </div>
+                        <div style={{ fontSize: '0.78rem', color: '#B45309' }}>
+                          Tài khoản của bạn sẽ hết hạn sau {daysLeft} ngày nữa ({new Intl.DateTimeFormat('vi-VN').format(new Date(user.planExpiresAt))}).
+                        </div>
+                      </div>
+                    </div>
+                    <Link href="/pricing" className="btn btn-primary btn-sm" style={{ background: '#D97706', borderColor: '#B45309' }}>
+                      Gia hạn ngay
+                    </Link>
+                  </motion.div>
+                );
+              }
+              return null;
+            })()
           )}
 
           {/* Stats row */}

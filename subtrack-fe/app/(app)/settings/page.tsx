@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { getInitials } from '@/lib/utils';
 import { User, Shield, Bell, Crown, Lock, CheckCircle2 } from 'lucide-react';
 import { authApi } from '@/lib/services';
@@ -126,15 +127,41 @@ export default function SettingsPage() {
               <div style={{ fontWeight: 700, marginBottom: 4, display: 'flex', alignItems: 'center', gap: 6 }}>
                 <Crown size={14} color="var(--accent-yellow)" /> Premium
               </div>
-              <div style={{ fontSize: '1.3rem', fontWeight: 900, marginBottom: 8 }}>29k–79k<span style={{ fontSize: '0.8rem', fontWeight: 500 }}>/tháng</span></div>
-              {['Không giới hạn subscription', 'Advanced waste analysis', 'Smart alerts', 'Phân tích nâng cao'].map((f) => (
+              <div style={{ fontSize: '1.1rem', fontWeight: 900, marginBottom: 8 }}>29k/tháng <span style={{ fontSize: '0.8rem', opacity: 0.6, fontWeight: 500 }}>hoặc</span> 199k/năm</div>
+              
+              {user?.planType === 'PREMIUM' && (
+                <div style={{ 
+                  marginBottom: 16, padding: '10px 12px', background: 'white', borderRadius: 'var(--radius-sm)',
+                  border: '1px solid var(--primary-light)', fontSize: '0.82rem'
+                }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+                    <span style={{ color: 'var(--text-secondary)' }}>Chu kỳ:</span>
+                    <span style={{ fontWeight: 700, color: 'var(--primary)' }}>
+                      {user.billingPeriod === 'YEARLY' ? 'Hàng năm' : 'Hàng tháng'}
+                    </span>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <span style={{ color: 'var(--text-secondary)' }}>Hết hạn:</span>
+                    <span style={{ fontWeight: 700, color: 'var(--text-primary)' }}>
+                      {user.planExpiresAt ? new Intl.DateTimeFormat('vi-VN').format(new Date(user.planExpiresAt)) : '---'}
+                    </span>
+                  </div>
+                </div>
+              )}
+
+              {[
+                'Không giới hạn subscription',
+                'Phân tích lãng phí nâng cao',
+                'Cảnh báo gia hạn sớm',
+                'Đề xuất tối ưu bằng AI',
+              ].map((f) => (
                 <div key={f} style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', display: 'flex', gap: 6, marginBottom: 4 }}>
                   <CheckCircle2 size={14} color="var(--accent-green)" /> {f}
                 </div>
               ))}
               {user?.planType === 'PREMIUM'
                 ? <div className="badge badge-purple" style={{ marginTop: 8 }}>Gói hiện tại</div>
-                : <button className="btn btn-primary btn-sm btn-full" style={{ marginTop: 8 }}>Nâng cấp ngay</button>}
+                : <Link href="/pricing" className="btn btn-primary btn-sm btn-full" style={{ marginTop: 8 }}>Nâng cấp ngay</Link>}
             </div>
           </div>
         </div>

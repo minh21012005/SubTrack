@@ -65,8 +65,8 @@ export default function SubscriptionsPage() {
             {subs.filter(s => !s.cancelled).length} đang hoạt động · {subs.filter(s => s.wasteCost > 0).length} cần xem xét
           </p>
         </div>
-        <Link href="/add" className="btn btn-primary">
-          <Plus size={16} /> Thêm mới
+        <Link href="/add" className="btn btn-primary btn-sm">
+          <Plus size={14} /> Thêm mới
         </Link>
       </div>
 

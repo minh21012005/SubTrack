@@ -7,6 +7,8 @@ export interface User {
   email: string;
   name: string;
   planType: PlanType;
+  billingPeriod?: BillingPeriod;
+  planExpiresAt?: string;
   role: RoleType;
   reminderDaysBefore: number;
 }

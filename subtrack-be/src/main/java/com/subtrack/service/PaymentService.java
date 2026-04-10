@@ -49,12 +49,17 @@ public class PaymentService {
 
         BigDecimal amount = billingPeriod == BillingPeriod.YEARLY ? PRICE_YEARLY : PRICE_MONTHLY;
 
+        // Generate unique transfer content at creation time
+        String emailPrefix = user.getEmail().split("@")[0].toUpperCase();
+        String transferContent = "SUBTRACK " + emailPrefix + " " + billingPeriod.name();
+
         PaymentRequest request = PaymentRequest.builder()
                 .user(user)
                 .planType(PlanType.PREMIUM)
                 .billingPeriod(billingPeriod)
                 .amount(amount)
                 .status(PaymentRequestStatus.PENDING)
+                .transferContent(transferContent)
                 .build();
 
         paymentRequestRepository.save(request);
@@ -90,6 +95,16 @@ public class PaymentService {
         // Upgrade user plan
         User user = req.getUser();
         user.setPlanType(PlanType.PREMIUM);
+        user.setBillingPeriod(req.getBillingPeriod());
+        
+        // Calculate expiration date
+        OffsetDateTime now = OffsetDateTime.now();
+        if (req.getBillingPeriod() == BillingPeriod.YEARLY) {
+            user.setPlanExpiresAt(now.plusDays(365));
+        } else {
+            user.setPlanExpiresAt(now.plusDays(31));
+        }
+        
         userRepository.save(user);
 
         req.setStatus(PaymentRequestStatus.APPROVED);
@@ -137,7 +152,7 @@ public class PaymentService {
                 .userId(req.getUser().getId())
                 .userName(req.getUser().getName())
                 .userEmail(req.getUser().getEmail())
-                .transferContent(transferContent)
+                .transferContent(req.getTransferContent())
                 .planType(req.getPlanType())
                 .billingPeriod(req.getBillingPeriod())
                 .amount(req.getAmount())

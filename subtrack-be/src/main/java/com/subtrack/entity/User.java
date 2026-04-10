@@ -38,6 +38,13 @@ public class User {
     @Builder.Default
     private PlanType planType = PlanType.FREE;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "billing_period")
+    private com.subtrack.enums.BillingPeriod billingPeriod;
+
+    @Column(name = "plan_expires_at")
+    private OffsetDateTime planExpiresAt;
+
     @Column(name = "reminder_days_before", nullable = false)
     @Builder.Default
     private Integer reminderDaysBefore = 7;

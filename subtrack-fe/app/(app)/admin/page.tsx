@@ -13,7 +13,7 @@ import type { AdminUser, PaymentRequest } from '@/lib/types';
 import { useAuth } from '@/lib/context/AuthContext';
 import { useRouter } from 'next/navigation';
 
-type Tab = 'users' | 'payments';
+type Tab = 'users' | 'approvals' | 'history';
 
 export default function AdminPage() {
   const { user } = useAuth();
@@ -70,6 +70,10 @@ export default function AdminPage() {
   const premiumUsers = data?.filter((u) => u.planType === 'PREMIUM').length ?? 0;
   const totalSubs = data?.reduce((s, u) => s + u.activeSubscriptions, 0) ?? 0;
   const pendingPayments = payments?.filter((p) => p.status === 'PENDING').length ?? 0;
+  
+  // Split payments by status for tabs
+  const pendingApprovals = payments?.filter(p => p.status === 'PENDING') ?? [];
+  const processedHistory = payments?.filter(p => p.status !== 'PENDING') ?? [];
 
   const statusBadge = (status: PaymentRequest['status']) => {
     const map = {
@@ -114,7 +118,7 @@ export default function AdminPage() {
           { label: 'Tổng users', value: String(totalUsers), icon: <Users size={20} color="var(--primary)" />, bg: 'var(--primary-light)', color: 'var(--primary)' },
           { label: 'Premium users', value: String(premiumUsers), icon: <TrendingUp size={20} color="var(--accent-green)" />, bg: 'var(--accent-green-light)', color: 'var(--accent-green)' },
           { label: 'Tổng subscriptions', value: String(totalSubs), icon: <CreditCard size={20} color="var(--accent-blue)" />, bg: '#EFF6FF', color: 'var(--accent-blue)' },
-          { label: 'Chờ duyệt', value: String(pendingPayments), icon: <Clock size={20} color="#D97706" />, bg: '#FEF3C7', color: '#D97706' },
+          { label: 'Yêu cầu chờ', value: String(pendingPayments), icon: <Clock size={20} color="#D97706" />, bg: '#FEF3C7', color: '#D97706' },
         ].map(({ label, value, icon, bg, color }, i) => (
           <motion.div key={i} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}
             className="card card-sm" style={{ border: `1.5px solid ${bg}` }}>
@@ -132,8 +136,9 @@ export default function AdminPage() {
       {/* Tabs */}
       <div style={{ display: 'flex', gap: 4, marginBottom: 20, borderBottom: '1px solid var(--border-light)', paddingBottom: 0 }}>
         {[
-          { key: 'users' as Tab, label: 'Người dùng', count: totalUsers },
-          { key: 'payments' as Tab, label: 'Duyệt thanh toán', count: pendingPayments > 0 ? pendingPayments : undefined, highlight: pendingPayments > 0 },
+          { key: 'users' as Tab, label: 'Người dùng' },
+          { key: 'approvals' as Tab, label: 'Chờ duyệt', count: pendingPayments > 0 ? pendingPayments : undefined, highlight: pendingPayments > 0 },
+          { key: 'history' as Tab, label: 'Lịch sử giao dịch' },
         ].map(({ key, label, count, highlight }) => (
           <button key={key} onClick={() => setTab(key)}
             style={{
@@ -223,89 +228,107 @@ export default function AdminPage() {
         </>
       )}
 
-      {/* Payments Tab */}
-      {tab === 'payments' && (
+      {/* Approvals Tab (Pending only) */}
+      {tab === 'approvals' && (
         <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
           {loadingPayments ? (
             <div style={{ display: 'flex', justifyContent: 'center', padding: '48px 0', gap: 12 }}>
               <div className="spinner" /><span style={{ color: 'var(--text-muted)' }}>Đang tải...</span>
             </div>
-          ) : !payments?.length ? (
+          ) : !pendingApprovals.length ? (
             <div style={{ padding: 48, textAlign: 'center', color: 'var(--text-muted)' }}>
-              <Clock size={36} style={{ margin: '0 auto 12px', opacity: 0.3 }} />
-              <div>Chưa có yêu cầu thanh toán nào</div>
+              <CheckCircle2 size={36} style={{ margin: '0 auto 12px', color: 'var(--accent-green)', opacity: 0.5 }} />
+              <div>Tất cả yêu cầu đã được xử lý</div>
             </div>
           ) : (
             <table style={{ width: '100%', borderCollapse: 'collapse' }}>
               <thead>
                 <tr style={{ borderBottom: '1px solid var(--border)', background: 'var(--bg)' }}>
-                  {['Người dùng', 'Nội dung CK (để xác minh)', 'Gói / Số tiền', 'Trạng thái', 'Ngày gửi', 'Hành động'].map((h) => (
-                    <th key={h} style={{ textAlign: 'left', padding: '12px 20px', fontSize: '0.78rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{h}</th>
+                  {['Người dùng', 'Nội dung xác minh', 'Gói / Số tiền', 'Ngày gửi', 'Hành động'].map((h) => (
+                    <th key={h} style={{ textAlign: 'left', padding: '12px 20px', fontSize: '0.78rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase' }}>{h}</th>
                   ))}
                 </tr>
               </thead>
               <tbody>
-                {payments.map((p, i) => (
+                {pendingApprovals.map((p, i) => (
                   <motion.tr key={p.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: i * 0.03 }}
-                    style={{ borderBottom: '1px solid var(--border-light)', transition: 'var(--transition)' }}
-                    onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--bg)')}
-                    onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}>
+                    style={{ borderBottom: '1px solid var(--border-light)' }}>
                     <td style={{ padding: '14px 20px' }}>
                       <div style={{ fontWeight: 600, fontSize: '0.9rem' }}>{p.userName}</div>
                       <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>{p.userEmail}</div>
                     </td>
-                    {/* Transfer content column — admin matches this against bank statement */}
                     <td style={{ padding: '14px 20px' }}>
-                      <div style={{
-                        display: 'inline-block',
-                        background: '#F0FDF4', color: '#166534',
-                        border: '1px solid #BBF7D0',
-                        borderRadius: 'var(--radius-sm)',
-                        padding: '4px 10px',
-                        fontFamily: 'monospace', fontWeight: 700, fontSize: '0.82rem',
-                        letterSpacing: '0.04em',
-                      }}>
+                      <div style={{ display: 'inline-block', background: '#F0FDF4', color: '#166534', border: '1px solid #BBF7D0', borderRadius: 'var(--radius-sm)', padding: '4px 10px', fontFamily: 'monospace', fontWeight: 700, fontSize: '0.82rem' }}>
                         {p.transferContent}
                       </div>
-                      <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: 4 }}>Tìm trong lịch sử GD ngân hàng</div>
                     </td>
                     <td style={{ padding: '14px 20px' }}>
                       <div style={{ fontWeight: 700, fontSize: '0.9rem' }}>Premium · {p.billingPeriod === 'YEARLY' ? 'Năm' : 'Tháng'}</div>
-                      <div style={{ fontWeight: 800, color: 'var(--primary)', fontSize: '0.95rem', marginTop: 2 }}>{formatVND(p.amount)}</div>
+                      <div style={{ fontWeight: 800, color: 'var(--primary)', fontSize: '0.95rem' }}>{formatVND(p.amount)}</div>
                     </td>
-                    <td style={{ padding: '14px 20px' }}>{statusBadge(p.status)}</td>
                     <td style={{ padding: '14px 20px', fontSize: '0.8rem', color: 'var(--text-muted)' }}>{new Date(p.createdAt).toLocaleString('vi-VN')}</td>
                     <td style={{ padding: '14px 20px' }}>
-                      {p.status === 'PENDING' ? (
-                        rejectingId === p.id ? (
-                          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                            <input className="form-input" style={{ fontSize: '0.8rem', padding: '6px 10px' }}
-                              placeholder="Lý do từ chối..." value={rejectNotes[p.id] || ''}
-                              onChange={(e) => setRejectNotes({ ...rejectNotes, [p.id]: e.target.value })} />
-                            <div style={{ display: 'flex', gap: 6 }}>
-                              <button className="btn btn-danger btn-sm" onClick={() => reject({ id: p.id, notes: rejectNotes[p.id] || '' })}>
-                                <X size={12} /> Xác nhận từ chối
-                              </button>
-                              <button className="btn btn-ghost btn-sm" onClick={() => setRejectingId(null)}>Huỷ</button>
-                            </div>
+                      {rejectingId === p.id ? (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                          <input className="form-input" style={{ fontSize: '0.8rem', padding: '6px 10px' }}
+                            placeholder="Lý do từ chối..." value={rejectNotes[p.id] || ''}
+                            onChange={(e) => setRejectNotes({ ...rejectNotes, [p.id]: e.target.value })} />
+                          <div style={{ display: 'flex', gap: 6 }}>
+                            <button className="btn btn-danger btn-sm" onClick={() => reject({ id: p.id, notes: rejectNotes[p.id] || '' })}>Xác nhận</button>
+                            <button className="btn btn-ghost btn-sm" onClick={() => setRejectingId(null)}>Huỷ</button>
                           </div>
-                        ) : (
-                          <div style={{ display: 'flex', gap: 8 }}>
-                            <button className="btn btn-success btn-sm" onClick={() => approve(p.id)}>
-                              <Check size={14} /> Duyệt
-                            </button>
-                            <button className="btn btn-danger btn-sm" style={{ background: 'transparent', color: 'var(--accent-red)', border: '1px solid var(--accent-red)' }}
-                              onClick={() => setRejectingId(p.id)}>
-                              <X size={14} /> Từ chối
-                            </button>
-                          </div>
-                        )
+                        </div>
                       ) : (
-                        <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-                          {p.verifiedByName && `Bởi ${p.verifiedByName}`}
-                          {p.notes && <div style={{ color: 'var(--accent-red)', marginTop: 2 }}>{p.notes}</div>}
-                        </span>
+                        <div style={{ display: 'flex', gap: 8 }}>
+                          <button className="btn btn-success btn-sm" onClick={() => approve(p.id)}><Check size={14} /> Duyệt</button>
+                          <button className="btn btn-outline btn-sm" onClick={() => setRejectingId(p.id)} style={{ color: 'var(--accent-red)' }}><X size={14} /> Từ chối</button>
+                        </div>
                       )}
+                    </td>
+                  </motion.tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </div>
+      )}
+
+      {/* History Tab (Approved/Rejected) */}
+      {tab === 'history' && (
+        <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
+          {!processedHistory.length ? (
+            <div style={{ padding: 48, textAlign: 'center', color: 'var(--text-muted)' }}>
+              <div>Chưa có giao dịch nào được xử lý</div>
+            </div>
+          ) : (
+            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+              <thead>
+                <tr style={{ borderBottom: '1px solid var(--border)', background: 'var(--bg)' }}>
+                  {['Người dùng', 'Gói / Số tiền', 'Trạng thái', 'Xử lý bởi', 'Thời gian'].map((h) => (
+                    <th key={h} style={{ textAlign: 'left', padding: '12px 20px', fontSize: '0.78rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase' }}>{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {processedHistory.map((p, i) => (
+                  <motion.tr key={p.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: i * 0.03 }}
+                    style={{ borderBottom: '1px solid var(--border-light)' }}>
+                    <td style={{ padding: '14px 20px' }}>
+                      <div style={{ fontWeight: 600, fontSize: '0.9rem' }}>{p.userName}</div>
+                      <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>{p.userEmail}</div>
+                    </td>
+                    <td style={{ padding: '14px 20px' }}>
+                      <div style={{ fontWeight: 600, fontSize: '0.85rem' }}>{p.billingPeriod}</div>
+                      <div style={{ fontWeight: 700, color: 'var(--primary)' }}>{formatVND(p.amount)}</div>
+                    </td>
+                    <td style={{ padding: '14px 20px' }}>{statusBadge(p.status)}</td>
+                    <td style={{ padding: '14px 20px' }}>
+                      <div style={{ fontSize: '0.85rem', fontWeight: 500 }}>{p.verifiedByName || '---'}</div>
+                      {p.notes && <div style={{ fontSize: '0.75rem', color: 'var(--accent-red)', marginTop: 2 }}>Lý do: {p.notes}</div>}
+                    </td>
+                    <td style={{ padding: '14px 20px', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+                      <div>{new Date(p.createdAt).toLocaleDateString('vi-VN')}</div>
+                      {p.verifiedAt && <div style={{ fontSize: '0.72rem', opacity: 0.7 }}>Duyệt: {new Date(p.verifiedAt).toLocaleDateString('vi-VN')}</div>}
                     </td>
                   </motion.tr>
                 ))}

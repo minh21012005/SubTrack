@@ -33,9 +33,6 @@ export default function LandingPage() {
           <span style={{ fontWeight: 800, fontSize: '1.25rem', color: 'var(--text-primary)', letterSpacing: '-0.02em' }}>SubTrack</span>
         </Link>
         <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
-          <a href="#pricing" className="desktop-only" style={{ fontWeight: 600, color: 'var(--text-secondary)', padding: '8px 16px', textDecoration: 'none', fontSize: '0.9rem' }}>
-            Bảng giá
-          </a>
           {isInitializing ? (
             <div style={{ width: 140, height: 36 }} />
           ) : isLoggedIn ? (
