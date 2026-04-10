@@ -4,8 +4,9 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import { wasteApi, subscriptionApi } from '@/lib/services';
 import { formatVND, categoryLabel } from '@/lib/utils';
-import { TrendingDown, Zap, AlertTriangle, Copy, RefreshCw, CheckCircle } from 'lucide-react';
+import { Zap, AlertTriangle, Copy, RefreshCw, CheckCircle, TrendingDown } from 'lucide-react';
 import type { ActionType, WasteItem } from '@/lib/types';
+import BrandLogo from '@/components/ui/BrandLogo';
 import Link from 'next/link';
 
 export default function WastePage() {
@@ -161,9 +162,12 @@ export default function WastePage() {
                 {data.suggestions.map((s) => (
                   <motion.div key={s.subscriptionId} initial={{ opacity: 0 }} animate={{ opacity: 1 }}
                     className="card card-sm" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
-                    <div style={{ flex: 1 }}>
-                      <div style={{ fontWeight: 700, fontSize: '0.95rem' }}>{s.name}</div>
-                      <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: 2 }}>{s.reason}</div>
+                    <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 12 }}>
+                      <BrandLogo name={s.name} size={32} />
+                      <div>
+                        <div style={{ fontWeight: 700, fontSize: '0.95rem' }}>{s.name}</div>
+                        <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: 2 }}>{s.reason}</div>
+                      </div>
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                       <div style={{ textAlign: 'right' }}>
@@ -226,8 +230,8 @@ function Section({ title, subtitle, items, onAction, loading }: {
             className="card card-sm" style={{ border: `1.5px solid ${item.usageStatus === 'UNUSED' ? 'var(--accent-red)' : 'var(--accent-orange)'}22` }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12, flexWrap: 'wrap' }}>
               <div style={{ flex: 1 }}>
-                <div style={{ fontWeight: 700, fontSize: '0.95rem', display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <div style={{ width: 10, height: 10, borderRadius: '50%', background: item.color || 'var(--primary)', flexShrink: 0 }} />
+                <div style={{ fontWeight: 700, fontSize: '0.95rem', display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <BrandLogo name={item.name} fallbackColor={item.color} size={28} />
                   {item.name}
                 </div>
                 <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: 2 }}>{item.reason}</div>

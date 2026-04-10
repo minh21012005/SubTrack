@@ -3,6 +3,7 @@
 import { motion } from 'framer-motion';
 import { AlertTriangle, CheckCircle, XCircle, RotateCcw, ExternalLink, Copy, Trash2 } from 'lucide-react';
 import { formatVND, categoryLabel, usageStatusLabel, billingCycleLabel } from '@/lib/utils';
+import BrandLogo from '@/components/ui/BrandLogo';
 import type { Subscription, ActionType } from '@/lib/types';
 
 interface SubscriptionCardProps {
@@ -29,6 +30,7 @@ export default function SubscriptionCard({ subscription: sub, onAction, onDelete
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, scale: 0.96 }}
+      whileHover={{ y: isCancelled ? 0 : -2, boxShadow: isCancelled ? 'none' : 'var(--shadow-md)' }}
       style={{
         background: isCancelled ? 'var(--bg)' : 'var(--bg-card)',
         border: `1.5px solid ${hasWaste && !isCancelled ? usage.color + '44' : 'var(--border-light)'}`,
@@ -51,16 +53,7 @@ export default function SubscriptionCard({ subscription: sub, onAction, onDelete
 
       {/* Header row */}
       <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12, paddingLeft: hasWaste && !isCancelled ? 8 : 0 }}>
-        {/* Color dot / icon */}
-        <div style={{
-          width: 44, height: 44, borderRadius: 12, flexShrink: 0,
-          background: sub.color ? sub.color + '22' : 'var(--primary-light)',
-          border: `2px solid ${sub.color || 'var(--primary)'}22`,
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          fontSize: '1.2rem',
-        }}>
-          <div style={{ width: 14, height: 14, borderRadius: '50%', background: sub.color || 'var(--primary)' }} />
-        </div>
+        <BrandLogo name={sub.name} fallbackColor={sub.color} size={48} />
 
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>

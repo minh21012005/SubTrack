@@ -3,6 +3,7 @@
 import { motion } from 'framer-motion';
 import { Calendar, Clock } from 'lucide-react';
 import { formatVND, daysUntilLabel } from '@/lib/utils';
+import BrandLogo from '@/components/ui/BrandLogo';
 import type { UpcomingCharge } from '@/lib/types';
 
 interface UpcomingChargesProps {
@@ -19,7 +20,7 @@ export default function UpcomingCharges({ charges, title }: UpcomingChargesProps
           {title}
         </h3>
         <div className="empty-state" style={{ padding: '24px 0' }}>
-          <div className="empty-state-icon">🎉</div>
+          <div className="empty-state-icon"><Calendar size={48} strokeWidth={1.5} color="var(--text-muted)" /></div>
           <p style={{ fontSize: '0.875rem' }}>Không có khoản nào sắp tới!</p>
         </div>
       </div>
@@ -51,13 +52,7 @@ export default function UpcomingCharges({ charges, title }: UpcomingChargesProps
               border: `1px solid ${charge.daysUntilRenewal <= 3 ? '#fca5a5' : 'transparent'}`,
             }}
           >
-            {/* Color dot */}
-            <div style={{
-              width: 10, height: 10,
-              borderRadius: '50%',
-              background: charge.color || 'var(--primary)',
-              flexShrink: 0,
-            }} />
+            <BrandLogo name={charge.name} fallbackColor={charge.color} size={32} />
 
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>

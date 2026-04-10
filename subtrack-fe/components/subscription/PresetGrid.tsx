@@ -2,6 +2,7 @@
 
 import { motion } from 'framer-motion';
 import { formatVND, categoryLabel, billingCycleLabel } from '@/lib/utils';
+import BrandLogo from '@/components/ui/BrandLogo';
 import type { Preset } from '@/lib/types';
 import { Check } from 'lucide-react';
 
@@ -30,7 +31,9 @@ export default function PresetGrid({ presets, selectedId, onSelect, filterCatego
             key={preset.id}
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: i * 0.02 }}
+            whileHover={{ scale: isSelected ? 1 : 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            transition={{ delay: i * 0.02, duration: 0.2 }}
             onClick={() => onSelect(preset)}
             style={{
               background: isSelected ? 'var(--primary-light)' : '#fff',
@@ -66,16 +69,8 @@ export default function PresetGrid({ presets, selectedId, onSelect, filterCatego
               </div>
             )}
 
-            {/* Color dot */}
-            <div style={{
-              width: 36, height: 36, borderRadius: 10, marginBottom: 8,
-              background: preset.color ? preset.color + '22' : 'var(--primary-light)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-            }}>
-              <div style={{
-                width: 12, height: 12, borderRadius: '50%',
-                background: preset.color || 'var(--primary)',
-              }} />
+            <div style={{ marginBottom: 8 }}>
+              <BrandLogo name={preset.name} fallbackColor={preset.color} size={36} />
             </div>
 
             <div style={{ fontSize: '0.875rem', fontWeight: 700, color: 'var(--text-primary)', marginBottom: 2 }}>

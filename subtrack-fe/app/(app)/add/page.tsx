@@ -7,6 +7,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronLeft, ChevronRight, Loader2, Search } from 'lucide-react';
 import { presetApi, subscriptionApi } from '@/lib/services';
 import PresetGrid from '@/components/subscription/PresetGrid';
+import BrandLogo from '@/components/ui/BrandLogo';
 import { categoryLabel, CATEGORIES, BILLING_CYCLES } from '@/lib/utils';
 import type { Preset, BillingCycle, UsageStatus } from '@/lib/types';
 
@@ -219,7 +220,7 @@ export default function AddSubscriptionPage() {
                   display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px',
                   background: 'var(--primary-light)', borderRadius: 'var(--radius-sm)', marginBottom: 20,
                 }}>
-                  <div style={{ width: 10, height: 10, borderRadius: '50%', background: selectedPreset.color || 'var(--primary)', flexShrink: 0 }} />
+                  <BrandLogo name={selectedPreset.name} fallbackColor={selectedPreset.color} size={28} />
                   <span style={{ fontWeight: 600, color: 'var(--primary)', fontSize: '0.9rem' }}>{selectedPreset.name}</span>
                   <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>đã được chọn</span>
                 </div>

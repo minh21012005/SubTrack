@@ -40,6 +40,8 @@ export function categoryLabel(cat: string): string {
     CLOUD: 'Đám mây',
     COMMUNICATION: 'Giao tiếp',
     HEALTH: 'Sức khoẻ',
+    SOCIAL: 'Mạng xã hội',
+    UTILITIES: 'Tiện ích',
     OTHER: 'Khác',
   };
   return map[cat] || cat;
@@ -106,6 +108,8 @@ export const CATEGORIES = [
   { value: 'CLOUD', label: 'Đám mây' },
   { value: 'COMMUNICATION', label: 'Giao tiếp' },
   { value: 'HEALTH', label: 'Sức khoẻ' },
+  { value: 'SOCIAL', label: 'Mạng xã hội' },
+  { value: 'UTILITIES', label: 'Tiện ích' },
   { value: 'OTHER', label: 'Khác' },
 ];
 

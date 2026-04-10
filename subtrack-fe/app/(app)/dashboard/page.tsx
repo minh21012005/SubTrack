@@ -217,14 +217,15 @@ function StatCard({ label, value, sub, color, bg, icon }: {
     <motion.div
       initial={{ opacity: 0, scale: 0.97 }}
       animate={{ opacity: 1, scale: 1 }}
+      whileHover={{ boxShadow: 'var(--shadow-md)' }}
       className="card card-sm"
-      style={{ border: `1.5px solid ${color}22` }}
+      style={{ border: `1.5px solid ${bg}`, background: 'var(--bg-card)' }}
     >
       <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
         <div style={{
-          width: 40, height: 40, borderRadius: 10,
+          width: 44, height: 44, borderRadius: '14px',
           background: bg, display: 'flex', alignItems: 'center', justifyContent: 'center',
-          fontSize: '1.1rem', flexShrink: 0,
+          flexShrink: 0, border: `1px solid ${color}22`,
         }}>
           {icon}
         </div>
