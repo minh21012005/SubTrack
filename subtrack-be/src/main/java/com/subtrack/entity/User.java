@@ -1,6 +1,7 @@
 package com.subtrack.entity;
 
 import com.subtrack.enums.PlanType;
+import com.subtrack.enums.Role;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -40,6 +41,11 @@ public class User {
     @Column(name = "reminder_days_before", nullable = false)
     @Builder.Default
     private Integer reminderDaysBefore = 7;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    @Builder.Default
+    private Role role = Role.USER;
 
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)

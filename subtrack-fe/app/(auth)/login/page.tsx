@@ -25,7 +25,8 @@ export default function LoginPage() {
       saveAuth(token, user);
       // Also set cookie for middleware
       document.cookie = `subtrack_token=${token}; path=/; max-age=${60 * 60 * 24}`;
-      router.push('/dashboard');
+      // Redirect based on role
+      router.push(user.role === 'ADMIN' ? '/admin' : '/dashboard');
     } catch (err: any) {
       setError(err.response?.data?.message || 'Đăng nhập thất bại. Thử lại nhé!');
     } finally {

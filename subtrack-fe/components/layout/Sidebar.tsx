@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import {
   LayoutDashboard, CreditCard, AlertTriangle,
-  Bell, Settings, LogOut, TrendingUp, Plus, X
+  Bell, Settings, LogOut, TrendingUp, Plus, X, Shield
 } from 'lucide-react';
 import { clearAuth, getInitials } from '@/lib/utils';
 import { useAuth } from '@/lib/context/AuthContext';
@@ -97,6 +97,31 @@ export default function Sidebar({ isOpen, onClose }: { isOpen?: boolean; onClose
             </Link>
           );
         })}
+
+        {/* Admin-only link */}
+        {user?.role === 'ADMIN' && (() => {
+          const active = pathname === '/admin' || pathname.startsWith('/admin/');
+          return (
+            <>
+              <div style={{ height: 1, background: 'var(--border-light)', margin: '8px 0' }} />
+              <Link
+                href="/admin"
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 12, padding: '10px 12px',
+                  borderRadius: 'var(--radius-sm)', fontWeight: active ? 600 : 500,
+                  fontSize: '0.9rem',
+                  color: active ? 'var(--accent-red)' : 'var(--text-secondary)',
+                  background: active ? '#FEF2F2' : 'transparent',
+                  transition: 'var(--transition)',
+                }}
+                onClick={onClose}
+              >
+                <Shield size={18} strokeWidth={1.75} />
+                Admin Panel
+              </Link>
+            </>
+          );
+        })()}
       </nav>
 
       {/* User Footer */}
@@ -116,8 +141,11 @@ export default function Sidebar({ isOpen, onClose }: { isOpen?: boolean; onClose
               <div style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                 {user.name}
               </div>
-              <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                {user.planType === 'PREMIUM' ? '⭐ Premium' : 'Free Plan'}
+              <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: 4 }}>
+                {user.role === 'ADMIN'
+                  ? <><Shield size={10} color="var(--accent-red)" />Admin</>  
+                  : user.planType === 'PREMIUM' ? '⭐ Premium' : 'Free Plan'
+                }
               </div>
             </div>
           </div>

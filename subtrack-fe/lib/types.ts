@@ -1,11 +1,13 @@
 // ─── Auth ────────────────────────────────────────────────────────────────────
 export type PlanType = 'FREE' | 'PREMIUM';
+export type RoleType = 'USER' | 'ADMIN';
 
 export interface User {
   id: string;
   email: string;
   name: string;
   planType: PlanType;
+  role: RoleType;
   reminderDaysBefore: number;
 }
 
@@ -157,6 +159,18 @@ export interface Notification {
   status: NotificationStatus;
   subscriptionId?: string;
   subscriptionName?: string;
+  createdAt: string;
+}
+
+// ─── Admin ─────────────────────────────────────────────────────────────
+export interface AdminUser {
+  id: string;
+  email: string;
+  name: string;
+  planType: PlanType;
+  role: RoleType;
+  activeSubscriptions: number;
+  totalMonthlySpend: number;
   createdAt: string;
 }
 

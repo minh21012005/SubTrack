@@ -2,7 +2,7 @@ import apiClient from './api';
 import type {
   ApiResponse, AuthResponse, Dashboard, Subscription,
   AddSubscriptionRequest, WasteAnalysis, Preset,
-  Notification, ActionType, User,
+  Notification, ActionType, User, AdminUser,
 } from './types';
 
 // ─── Auth ────────────────────────────────────────────────────────────────────
@@ -75,4 +75,10 @@ export const notificationApi = {
 
   markAllRead: () =>
     apiClient.put<ApiResponse<void>>('/api/notifications/read-all'),
+};
+
+// ─── Admin ────────────────────────────────────────────────────────────────────
+export const adminApi = {
+  getAllUsers: () =>
+    apiClient.get<ApiResponse<AdminUser[]>>('/api/admin/users'),
 };

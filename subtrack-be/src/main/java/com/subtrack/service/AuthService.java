@@ -15,6 +15,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -45,7 +46,7 @@ public class AuthService {
 
         String token = jwtService.generateToken(
                 new org.springframework.security.core.userdetails.User(
-                        user.getEmail(), user.getPasswordHash(), java.util.List.of()
+                        user.getEmail(), user.getPasswordHash(), java.util.List.of(new SimpleGrantedAuthority("ROLE_" + user.getRole().name()))
                 )
         );
 
@@ -70,7 +71,7 @@ public class AuthService {
 
         String token = jwtService.generateToken(
                 new org.springframework.security.core.userdetails.User(
-                        user.getEmail(), user.getPasswordHash(), java.util.List.of()
+                        user.getEmail(), user.getPasswordHash(), java.util.List.of(new SimpleGrantedAuthority("ROLE_" + user.getRole().name()))
                 )
         );
 
@@ -106,6 +107,7 @@ public class AuthService {
                 .email(user.getEmail())
                 .name(user.getName())
                 .planType(user.getPlanType())
+                .role(user.getRole())
                 .reminderDaysBefore(user.getReminderDaysBefore())
                 .build();
     }

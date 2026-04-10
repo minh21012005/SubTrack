@@ -3,6 +3,8 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { User } from '@/lib/types';
+import { authApi } from '@/lib/services';
+import { getToken } from '@/lib/utils';
 
 interface AuthContextType {
   user: User | null;
@@ -20,13 +22,28 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const router = useRouter();
 
   useEffect(() => {
-    // Rehydrate user from localStorage on mount
     const storedUser = localStorage.getItem('subtrack_user');
     if (storedUser) {
       try {
-        setUser(JSON.parse(storedUser));
+        const parsed: User = JSON.parse(storedUser);
+        // If the stored user is missing the role field (old session), refresh from API
+        if (!parsed.role) {
+          const token = getToken();
+          if (token) {
+            authApi.me().then(res => {
+              const freshUser = res.data.data;
+              setUser(freshUser);
+              localStorage.setItem('subtrack_user', JSON.stringify(freshUser));
+            }).catch(() => {
+              setUser(parsed);
+            }).finally(() => setIsInitializing(false));
+            return;
+          }
+        } else {
+          setUser(parsed);
+        }
       } catch (error) {
-        console.error("Failed to parse user from localStorage", error);
+        console.error('Failed to parse user from localStorage', error);
       }
     }
     setIsInitializing(false);
