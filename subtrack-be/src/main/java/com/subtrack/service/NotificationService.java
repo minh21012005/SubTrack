@@ -84,6 +84,42 @@ public class NotificationService {
         log.info("Created renewal notification for user {} subscription {}", user.getEmail(), subscription.getName());
     }
 
+    /**
+     * Called by PaymentService when admin approves or rejects a payment request.
+     */
+    @Transactional
+    public void createPaymentNotification(User user, boolean approved, String billingPeriod, String notes) {
+        String period = "YEARLY".equals(billingPeriod) ? "hàng năm" : "hàng tháng";
+        String message;
+        NotificationType type;
+
+        if (approved) {
+            message = String.format(
+                "✅ Yêu cầu nâng cấp Premium (%s) của bạn đã được duyệt! Tài khoản đã được nâng cấp. Cảm ơn bạn đã tin tưởng SubTrack 🎉",
+                period
+            );
+            type = NotificationType.PAYMENT_APPROVED;
+        } else {
+            String reason = (notes != null && !notes.isBlank()) ? " Lý do: " + notes : "";
+            message = String.format(
+                "❌ Yêu cầu nâng cấp Premium (%s) của bạn đã bị từ chối.%s Vui lòng liên hệ admin để được hỗ trợ.",
+                period, reason
+            );
+            type = NotificationType.PAYMENT_REJECTED;
+        }
+
+        Notification notification = Notification.builder()
+                .user(user)
+                .type(type)
+                .message(message)
+                .status(NotificationStatus.UNREAD)
+                .sentAt(OffsetDateTime.now())
+                .build();
+
+        notificationRepository.save(notification);
+        log.info("Created payment {} notification for user {}", approved ? "APPROVED" : "REJECTED", user.getEmail());
+    }
+
     private User getUser(String email) {
         return userRepository.findByEmail(email)
                 .orElseThrow(() -> new NotFoundException("Tài khoản không tồn tại"));

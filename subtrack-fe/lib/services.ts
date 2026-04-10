@@ -2,7 +2,7 @@ import apiClient from './api';
 import type {
   ApiResponse, AuthResponse, Dashboard, Subscription,
   AddSubscriptionRequest, WasteAnalysis, Preset,
-  Notification, ActionType, User, AdminUser,
+  Notification, ActionType, User, AdminUser, PaymentRequest,
 } from './types';
 
 // ─── Auth ────────────────────────────────────────────────────────────────────
@@ -81,4 +81,22 @@ export const notificationApi = {
 export const adminApi = {
   getAllUsers: () =>
     apiClient.get<ApiResponse<AdminUser[]>>('/api/admin/users'),
+
+  getPayments: () =>
+    apiClient.get<ApiResponse<PaymentRequest[]>>('/api/admin/payments'),
+
+  approvePayment: (id: string) =>
+    apiClient.put<ApiResponse<PaymentRequest>>(`/api/admin/payments/${id}/approve`),
+
+  rejectPayment: (id: string, notes?: string) =>
+    apiClient.put<ApiResponse<PaymentRequest>>(`/api/admin/payments/${id}/reject`, { notes }),
+};
+
+// ─── Payments ─────────────────────────────────────────────────────────────────
+export const paymentApi = {
+  request: (billingPeriod: 'MONTHLY' | 'YEARLY') =>
+    apiClient.post<ApiResponse<PaymentRequest>>('/api/payments/request', { billingPeriod }),
+
+  getMyRequests: () =>
+    apiClient.get<ApiResponse<PaymentRequest[]>>('/api/payments/my-requests'),
 };

@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { TrendingUp, Eye, EyeOff, Loader2, Check } from 'lucide-react';
 import { authApi } from '@/lib/services';
 import { saveAuth } from '@/lib/utils';
+import { useAuth } from '@/lib/context/AuthContext';
 
 const PERKS = [
   'Phát hiện subscription đang lãng phí',
@@ -15,6 +16,7 @@ const PERKS = [
 
 export default function RegisterPage() {
   const router = useRouter();
+  const { updateUser } = useAuth();
   const [form, setForm] = useState({ email: '', name: '', password: '' });
   const [showPwd, setShowPwd] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -32,6 +34,7 @@ export default function RegisterPage() {
       const res = await authApi.register(form.email, form.name, form.password);
       const { token, user } = res.data.data;
       saveAuth(token, user);
+      updateUser(user); // sync context state immediately
       document.cookie = `subtrack_token=${token}; path=/; max-age=${60 * 60 * 24}`;
       router.push('/dashboard');
     } catch (err: any) {

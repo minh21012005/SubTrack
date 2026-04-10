@@ -174,6 +174,26 @@ export interface AdminUser {
   createdAt: string;
 }
 
+// ─── Payments ─────────────────────────────────────────────────────────────
+export type PaymentRequestStatus = 'PENDING' | 'APPROVED' | 'REJECTED';
+export type BillingPeriod = 'MONTHLY' | 'YEARLY';
+
+export interface PaymentRequest {
+  id: string;
+  userId: string;
+  userName: string;
+  userEmail: string;
+  transferContent: string;   // admin uses this to match bank statement
+  planType: PlanType;
+  billingPeriod: BillingPeriod;
+  amount: number;
+  status: PaymentRequestStatus;
+  notes?: string;
+  createdAt: string;
+  verifiedAt?: string;
+  verifiedByName?: string;
+}
+
 // ─── API wrapper ─────────────────────────────────────────────────────────────
 export interface ApiResponse<T> {
   success: boolean;

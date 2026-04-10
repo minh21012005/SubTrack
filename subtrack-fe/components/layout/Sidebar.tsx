@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import {
   LayoutDashboard, CreditCard, AlertTriangle,
-  Bell, Settings, LogOut, TrendingUp, Plus, X, Shield
+  Bell, Settings, LogOut, TrendingUp, Plus, X, Shield, Star
 } from 'lucide-react';
 import { clearAuth, getInitials } from '@/lib/utils';
 import { useAuth } from '@/lib/context/AuthContext';
@@ -125,7 +125,28 @@ export default function Sidebar({ isOpen, onClose }: { isOpen?: boolean; onClose
       </nav>
 
       {/* User Footer */}
-      <div style={{ padding: '16px', borderTop: '1px solid var(--border-light)' }}>
+      <div style={{ padding: '0 16px 16px' }}>
+        {/* Go Premium CTA for FREE users */}
+        {user && user.planType === 'FREE' && user.role !== 'ADMIN' && (
+          <Link href="/pricing" onClick={onClose}
+            style={{
+              display: 'block', marginBottom: 12,
+              background: 'linear-gradient(135deg, #4F46E5, #7C3AED)',
+              borderRadius: 'var(--radius-lg)', padding: '14px 16px',
+              textDecoration: 'none', color: 'white',
+              boxShadow: '0 4px 16px -4px rgba(79,70,229,0.45)',
+              transition: 'var(--transition)',
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+              <Star size={14} fill="#FCD34D" color="#FCD34D" />
+              <span style={{ fontWeight: 800, fontSize: '0.9rem' }}>Nâng cấp Premium</span>
+            </div>
+            <div style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.75)' }}>Bắt đầu từ 29k/tháng. Không giới hạn!</div>
+          </Link>
+        )}
+
+        <div style={{ borderTop: '1px solid var(--border-light)', paddingTop: 12 }}>
         {user && (
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
             <div style={{
@@ -157,6 +178,7 @@ export default function Sidebar({ isOpen, onClose }: { isOpen?: boolean; onClose
         >
           <LogOut size={16} /> Đăng xuất
         </button>
+        </div>  {/* end inner border-top div */}
       </div>
     </aside>
   );

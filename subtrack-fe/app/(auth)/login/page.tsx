@@ -6,9 +6,11 @@ import Link from 'next/link';
 import { Eye, EyeOff, TrendingUp, Loader2 } from 'lucide-react';
 import { authApi } from '@/lib/services';
 import { saveAuth } from '@/lib/utils';
+import { useAuth } from '@/lib/context/AuthContext';
 
 export default function LoginPage() {
   const router = useRouter();
+  const { updateUser } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPwd, setShowPwd] = useState(false);
@@ -23,6 +25,7 @@ export default function LoginPage() {
       const res = await authApi.login(email, password);
       const { token, user } = res.data.data;
       saveAuth(token, user);
+      updateUser(user); // update context state immediately
       // Also set cookie for middleware
       document.cookie = `subtrack_token=${token}; path=/; max-age=${60 * 60 * 24}`;
       // Redirect based on role
