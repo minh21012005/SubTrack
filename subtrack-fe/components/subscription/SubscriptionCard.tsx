@@ -132,6 +132,30 @@ export default function SubscriptionCard({ subscription: sub, onAction, onDelete
         </div>
       )}
 
+      {/* Notes section */}
+      {sub.notes && (
+        <div style={{
+          marginTop: 12, 
+          padding: '8px 12px',
+          background: 'var(--bg)',
+          borderRadius: 'var(--radius-sm)',
+          fontSize: '0.8rem',
+          color: 'var(--text-secondary)',
+          borderLeft: sub.notes.toLowerCase().includes('trial') || sub.notes.toLowerCase().includes('dùng thử')
+            ? '3px solid var(--accent-orange)'
+            : '3px solid var(--border)',
+          fontStyle: 'italic'
+        }}>
+          <span style={{ fontWeight: 600, fontStyle: 'normal', fontSize: '0.7rem', textTransform: 'uppercase', display: 'block', marginBottom: 2, color: 'var(--text-muted)' }}>Ghi chú:</span>
+          {sub.notes}
+          {(sub.notes.toLowerCase().includes('trial') || sub.notes.toLowerCase().includes('dùng thử')) && (
+            <div style={{ marginTop: 4, color: 'var(--accent-orange)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 4, fontSize: '0.7rem' }}>
+              <AlertTriangle size={12} /> Đây là gói dùng thử, hãy lưu ý ngày hủy!
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Actions */}
       {!isCancelled && (
         <div style={{ display: 'flex', gap: 8, marginTop: 14, flexWrap: 'wrap' }}>
