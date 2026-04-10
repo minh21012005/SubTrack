@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import { RefreshCw, Loader2, Plus, CreditCard, AlertTriangle, LayoutDashboard, Zap, Info } from 'lucide-react';
 import Link from 'next/link';
 import { dashboardApi, subscriptionApi } from '@/lib/services';
+import { useAuth } from '@/lib/context/AuthContext';
 import ShockHero from '@/components/dashboard/ShockHero';
 import UpcomingCharges from '@/components/dashboard/UpcomingCharges';
 import SubscriptionCard from '@/components/subscription/SubscriptionCard';
@@ -12,6 +13,7 @@ import { formatVND } from '@/lib/utils';
 import type { ActionType } from '@/lib/types';
 
 export default function DashboardPage() {
+  const { user } = useAuth();
   const queryClient = useQueryClient();
 
   const { data, isLoading, error, refetch } = useQuery({

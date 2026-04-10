@@ -2,6 +2,7 @@ package com.subtrack.scheduler;
 
 import com.subtrack.entity.User;
 import com.subtrack.enums.PlanType;
+import com.subtrack.repository.RenewalReminderRepository;
 import com.subtrack.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -18,6 +19,7 @@ import java.util.List;
 public class SubscriptionScheduler {
 
     private final UserRepository userRepository;
+    private final RenewalReminderRepository renewalReminderRepository;
 
     /**
      * Runs every hour to check for expired subscriptions.
@@ -43,6 +45,14 @@ public class SubscriptionScheduler {
                 user.setPlanType(PlanType.FREE);
                 user.setPlanExpiresAt(null);
                 user.setBillingPeriod(null);
+                user.setReminderDaysBefore(3);
+
+                user.getSubscriptions().forEach(sub -> {
+                    renewalReminderRepository.findBySubscriptionId(sub.getId()).ifPresent(reminder -> {
+                        reminder.setDaysBefore(3);
+                        renewalReminderRepository.save(reminder);
+                    });
+                });
             }
             
             userRepository.saveAll(expiredUsers);

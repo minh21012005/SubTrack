@@ -303,7 +303,7 @@ export default function AddSubscriptionPage() {
                   <ChevronLeft size={16} /> Quay lại
                 </button>
                 <button className="btn btn-primary" disabled={!canSubmit} onClick={() => setStep(3)}>
-                  Xem lại <ChevronRight size={16} />
+                  Tiếp tục <ChevronRight size={16} />
                 </button>
               </div>
             </div>
@@ -351,7 +351,7 @@ export default function AddSubscriptionPage() {
                   onClick={() => addMutation.mutate()}
                 >
                   {addMutation.isPending ? <Loader2 size={16} /> : null}
-                  {addMutation.isPending ? 'Đang thêm...' : '✅ Xác nhận thêm'}
+                  {addMutation.isPending ? 'Đang thêm...' : 'Xác nhận'}
                 </button>
               </div>
             </div>

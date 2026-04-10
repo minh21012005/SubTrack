@@ -47,7 +47,7 @@ public class User {
 
     @Column(name = "reminder_days_before", nullable = false)
     @Builder.Default
-    private Integer reminderDaysBefore = 7;
+    private Integer reminderDaysBefore = 3;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)

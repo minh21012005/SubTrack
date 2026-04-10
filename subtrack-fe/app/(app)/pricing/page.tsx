@@ -52,7 +52,7 @@ const PREMIUM_FEATURES = [
   'Cảnh báo gia hạn sớm (7 ngày)',
   'Báo cáo chi tiêu hàng tháng',
   'Phát hiện subscription trùng lặp',
-  'Đề xuất tối ưu chi phí AI',
+  'Đề xuất tối ưu chi phí tự động',
 ];
 
 function vietQrUrl(bankKey: string, stk: string, owner: string, amount: number, content: string) {

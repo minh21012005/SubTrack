@@ -4,12 +4,14 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import { wasteApi, subscriptionApi } from '@/lib/services';
 import { formatVND, categoryLabel } from '@/lib/utils';
-import { Zap, AlertTriangle, Copy, RefreshCw, CheckCircle, TrendingDown } from 'lucide-react';
+import { Zap, AlertTriangle, Copy, RefreshCw, CheckCircle, TrendingDown, Lock, Star } from 'lucide-react';
 import type { ActionType, WasteItem } from '@/lib/types';
+import { useAuth } from '@/lib/context/AuthContext';
 import BrandLogo from '@/components/ui/BrandLogo';
 import Link from 'next/link';
 
 export default function WastePage() {
+  const { user } = useAuth();
   const queryClient = useQueryClient();
 
   const { data, isLoading, refetch } = useQuery({
@@ -92,7 +94,9 @@ export default function WastePage() {
             </div>
           </motion.div>
 
-          {/* Unused subscriptions */}
+          {user?.planType === 'PREMIUM' ? (
+            <>
+              {/* Unused subscriptions */}
           {data.unusedItems.length > 0 && (
             <Section
               title={`Không sử dụng (${data.unusedItems.length})`}
@@ -196,6 +200,32 @@ export default function WastePage() {
                 <div style={{ fontSize: '1.5rem', fontWeight: 900, color: 'var(--accent-green)' }}>
                   {formatVND(data.potentialSavings)}/tháng
                 </div>
+              </div>
+            </div>
+          )}
+            </>
+          ) : (
+            <div style={{
+              position: 'relative', marginTop: 12, padding: '40px 20px',
+              border: '1px solid var(--border-light)', borderRadius: 'var(--radius-lg)',
+              background: 'linear-gradient(to bottom, rgba(255,255,255,0.8), rgba(255,255,255,0.4))',
+              display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+              textAlign: 'center', overflow: 'hidden'
+            }}>
+              {/* Blurred background faking content */}
+              <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, filter: 'blur(8px)', opacity: 0.4, pointerEvents: 'none', background: 'repeating-linear-gradient(0deg, var(--bg) 0px, var(--bg) 40px, var(--border-light) 40px, var(--border-light) 41px)', zIndex: 0 }} />
+              
+              <div style={{ position: 'relative', zIndex: 1, maxWidth: 400 }}>
+                <div style={{ width: 64, height: 64, margin: '0 auto 16px', background: 'linear-gradient(135deg, #FFF7ED, #FEF3C7)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid #FCD34D' }}>
+                  <Lock size={28} color="#D97706" />
+                </div>
+                <h2 style={{ fontSize: '1.25rem', fontWeight: 800, marginBottom: 8, color: '#92400E' }}>Tính năng Premium</h2>
+                <p style={{ color: '#B45309', marginBottom: 24, fontSize: '0.9rem', lineHeight: 1.5 }}>
+                  Khám phá chi tiết danh sách ứng dụng gây lãng phí, nhận cảnh báo trùng lặp và đề xuất tự động để cắt giảm {formatVND(data.potentialSavings)}/tháng.
+                </p>
+                <Link href="/pricing" className="btn btn-primary btn-full" style={{ background: '#D97706', border: 'none', boxShadow: '0 4px 14px rgba(217, 119, 6, 0.4)' }}>
+                  <Star size={16} fill="currentColor" /> Nâng cấp Premium ngay
+                </Link>
               </div>
             </div>
           )}

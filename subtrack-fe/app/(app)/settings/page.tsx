@@ -153,7 +153,7 @@ export default function SettingsPage() {
                 'Không giới hạn subscription',
                 'Phân tích lãng phí nâng cao',
                 'Cảnh báo gia hạn sớm',
-                'Đề xuất tối ưu bằng AI',
+                'Đề xuất tối ưu tự động',
               ].map((f) => (
                 <div key={f} style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', display: 'flex', gap: 6, marginBottom: 4 }}>
                   <CheckCircle2 size={14} color="var(--accent-green)" /> {f}

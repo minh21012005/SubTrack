@@ -8,6 +8,7 @@ import com.subtrack.enums.PaymentRequestStatus;
 import com.subtrack.enums.PlanType;
 import com.subtrack.exception.BadRequestException;
 import com.subtrack.repository.PaymentRequestRepository;
+import com.subtrack.repository.RenewalReminderRepository;
 import com.subtrack.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -26,6 +27,7 @@ public class PaymentService {
     private final PaymentRequestRepository paymentRequestRepository;
     private final UserRepository userRepository;
     private final NotificationService notificationService;
+    private final RenewalReminderRepository renewalReminderRepository;
 
     private static final BigDecimal PRICE_MONTHLY = new BigDecimal("29000");
     private static final BigDecimal PRICE_YEARLY  = new BigDecimal("199000");
@@ -96,7 +98,17 @@ public class PaymentService {
         User user = req.getUser();
         user.setPlanType(PlanType.PREMIUM);
         user.setBillingPeriod(req.getBillingPeriod());
-        
+        user.setReminderDaysBefore(7);
+        userRepository.save(user);
+
+        // Update existing reminders to 7 days
+        user.getSubscriptions().forEach(sub -> {
+            renewalReminderRepository.findBySubscriptionId(sub.getId()).ifPresent(reminder -> {
+                reminder.setDaysBefore(7);
+                renewalReminderRepository.save(reminder);
+            });
+        });
+
         // Calculate expiration date
         OffsetDateTime now = OffsetDateTime.now();
         if (req.getBillingPeriod() == BillingPeriod.YEARLY) {
