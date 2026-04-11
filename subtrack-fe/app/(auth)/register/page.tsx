@@ -69,8 +69,27 @@ export default function RegisterPage() {
   return (
     <div className="auth-wrapper">
       <div className="auth-card">
+        {/* Back to Home */}
+        <Link 
+          href="/" 
+          style={{ 
+            display: 'inline-flex', 
+            alignItems: 'center', 
+            gap: 6, 
+            fontSize: '0.85rem', 
+            color: 'var(--text-muted)', 
+            marginBottom: 20,
+            textDecoration: 'none',
+            transition: 'color 0.2s'
+          }}
+          onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--primary)')}
+          onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--text-muted)')}
+        >
+          <span style={{ fontSize: '1.1rem' }}>←</span> Quay về trang chủ
+        </Link>
+
         {/* Logo */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 28 }}>
+        <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 28, textDecoration: 'none' }}>
           <img 
             src="/image.jpg" 
             alt="SubTrack Logo" 
@@ -82,7 +101,7 @@ export default function RegisterPage() {
             <div style={{ fontWeight: 900, fontSize: '1.3rem', color: 'var(--text-primary)' }}>SubTrack</div>
             <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Phát hiện lãng phí subscription</div>
           </div>
-        </div>
+        </Link>
 
         <h1 style={{ fontSize: '1.5rem', fontWeight: 800, marginBottom: 6 }}>
           {step === 1 ? 'Tạo tài khoản miễn phí' : 'Xác thực Email'}
