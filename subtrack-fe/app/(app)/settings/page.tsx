@@ -110,7 +110,11 @@ export default function SettingsPage() {
             }}>
               <div style={{ fontWeight: 700, marginBottom: 4 }}>Free</div>
               <div style={{ fontSize: '1.3rem', fontWeight: 900, marginBottom: 8 }}>0đ<span style={{ fontSize: '0.8rem', fontWeight: 500 }}>/tháng</span></div>
-              {['5 subscription', 'Dashboard cơ bản', 'Waste detection'].map((f) => (
+              {[
+                'Quản lý tối đa 5 Subscriptions',
+                'Cảnh báo gia hạn trước 3 ngày',
+                'Dashboard quản lý cơ bản',
+              ].map((f) => (
                 <div key={f} style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', display: 'flex', gap: 6, marginBottom: 4 }}>
                   <CheckCircle2 size={14} color="var(--accent-green)" /> {f}
                 </div>
@@ -150,10 +154,13 @@ export default function SettingsPage() {
               )}
 
               {[
-                'Không giới hạn subscription',
-                'Phân tích lãng phí nâng cao',
-                'Cảnh báo gia hạn sớm',
-                'Đề xuất tối ưu tự động',
+                'Không giới hạn Subscriptions',
+                'Cảnh báo gia hạn siêu sớm (7 ngày)',
+                'Quản lý Mục tiêu tiết kiệm (Goals)',
+                'Biểu đồ Phân tích Lãng phí chuyên sâu',
+                'Điểm sức khoẻ chi tiêu (0-100)',
+                'Tự động phát hiện & Gợi ý tối ưu',
+                'Hỗ trợ khách hàng Ưu tiên',
               ].map((f) => (
                 <div key={f} style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', display: 'flex', gap: 6, marginBottom: 4 }}>
                   <CheckCircle2 size={14} color="var(--accent-green)" /> {f}

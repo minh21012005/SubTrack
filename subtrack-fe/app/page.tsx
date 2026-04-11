@@ -10,13 +10,14 @@ import {
 import { useAuth } from '@/lib/context/AuthContext';
 
 const PREMIUM_FEATURES = [
-  'Không giới hạn subscriptions',
-  'Phân tích lãng phí nâng cao',
+  'Quản lý Subscriptions KHÔNG GIỚI HẠN',
+  'Cảnh báo gia hạn sớm lên đến 7 ngày',
+  'Mở khoá Tính năng Quản lý Mục Tiêu (Goals)',
+  'Biểu đồ & Phân tích lãng phí chuyên sâu',
   'Điểm sức khoẻ chi tiêu (0–100)',
-  'Cảnh báo gia hạn sớm (7 ngày)',
-  'Báo cáo chi tiêu hàng tháng',
-  'Phát hiện subscription trùng lặp',
-  'Đề xuất tối ưu chi phí tự động',
+  'Phát hiện Service trùng lặp tự động',
+  'Đề xuất cắt giảm tối ưu chi phí',
+  'Hỗ trợ khách hàng ưu tiên',
 ];
 
 // Icon với gradient background — component dùng chung
@@ -285,7 +286,12 @@ export default function LandingPage() {
                 <div style={{ fontSize: '2.4rem', fontWeight: 900, color: 'var(--text-primary)', marginBottom: 4 }}>0 ₫</div>
                 <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: 28 }}>Mãi mãi miễn phí</div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 32 }}>
-                  {['Tối đa 5 subscriptions', 'Dashboard tổng quan', 'Điểm sức khoẻ chi tiêu', 'Cảnh báo gia hạn cơ bản'].map(f => (
+                  {[
+                    'Quản lý tối đa 5 Subscriptions',
+                    'Cảnh báo gia hạn trước 3 ngày',
+                    'Dashboard quản lý cơ bản',
+                    'Báo cáo chu kỳ tiêu chuẩn',
+                  ].map(f => (
                     <div key={f} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
                       <Check size={16} color="var(--text-muted)" /> {f}
                     </div>
