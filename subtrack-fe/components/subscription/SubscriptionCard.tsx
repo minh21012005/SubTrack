@@ -104,6 +104,9 @@ export default function SubscriptionCard({ subscription: sub, onAction, onDelete
           <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
             {formatCurrency(sub.monthlyCost, sub.currency)}/tháng
           </div>
+          <div style={{ fontSize: '0.7rem', color: 'var(--accent-orange)', fontWeight: 600, marginTop: 1 }}>
+            ~{formatCurrency(sub.monthlyCost * 12, sub.currency)}/năm
+          </div>
         </div>
       </div>
 

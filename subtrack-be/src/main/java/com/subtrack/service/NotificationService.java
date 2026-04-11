@@ -58,6 +58,17 @@ public class NotificationService {
         notificationRepository.markAllReadByUserId(user.getId());
     }
 
+    @Transactional
+    public void deleteNotification(String email, UUID notificationId) {
+        User user = getUser(email);
+        Notification notif = notificationRepository.findById(notificationId)
+                .orElseThrow(() -> new NotFoundException("Notification không tồn tại"));
+        if (!notif.getUser().getId().equals(user.getId())) {
+            throw new NotFoundException("Notification không tồn tại");
+        }
+        notificationRepository.delete(notif);
+    }
+
     /**
      * Called by the scheduler to create a renewal reminder notification.
      */

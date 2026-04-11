@@ -37,9 +37,21 @@ export default function NotificationBell() {
 
   const { mutate: markAllRead } = useMutation({
     mutationFn: () => notificationApi.markAllRead(),
+    onMutate: () => {
+      // Optimistic upate
+      qc.setQueryData(['notification-count'], { count: 0 });
+      // Optimistic update for notifications list to mark all as read
+      qc.setQueryData(['notifications-preview'], (old: Notification[] | undefined) => 
+        old ? old.map(n => ({ ...n, status: 'READ' })) : []
+      );
+      qc.setQueryData(['notifications'], (old: Notification[] | undefined) => 
+        old ? old.map(n => ({ ...n, status: 'READ' })) : []
+      );
+    },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['notification-count'] });
       qc.invalidateQueries({ queryKey: ['notifications-preview'] });
+      qc.invalidateQueries({ queryKey: ['notifications'] });
     },
   });
 
@@ -67,7 +79,12 @@ export default function NotificationBell() {
   return (
     <div ref={ref} style={{ position: 'relative' }}>
       <button
-        onClick={() => setOpen(!open)}
+        onClick={() => {
+          if (!open && unreadCount > 0) {
+            markAllRead();
+          }
+          setOpen(!open);
+        }}
         style={{
           position: 'relative', background: 'none', border: 'none',
           cursor: 'pointer', padding: 8, borderRadius: 'var(--radius-md)',

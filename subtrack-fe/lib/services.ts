@@ -81,6 +81,9 @@ export const notificationApi = {
 
   markAllRead: () =>
     apiClient.put<ApiResponse<void>>('/api/notifications/read-all'),
+
+  delete: (id: string) =>
+    apiClient.delete<ApiResponse<void>>(`/api/notifications/${id}`),
 };
 
 // ─── Admin ────────────────────────────────────────────────────────────────────

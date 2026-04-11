@@ -16,7 +16,9 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -67,6 +69,19 @@ public class DashboardService {
                 .map(s -> toSubResponse(s, duplicateCategories))
                 .collect(Collectors.toList());
 
+        // Health Score
+        Map<String, Integer> healthBreakdown = new LinkedHashMap<>();
+        int wasteDeduction = (int) Math.min(35, wastePercent * 0.35);
+        int unusedDeduction = (int) Math.min(25, activeSubs.stream().filter(s -> s.getUsageStatus() == UsageStatus.UNUSED).count() * 10);
+        int rarelyDeduction = (int) Math.min(15, activeSubs.stream().filter(s -> s.getUsageStatus() == UsageStatus.RARELY).count() * 5);
+        int dupDeduction = Math.min(20, duplicateCategories.size() * 7);
+        int healthScore = Math.max(0, 100 - wasteDeduction - unusedDeduction - rarelyDeduction - dupDeduction);
+        healthBreakdown.put("L\u00e3ng ph\u00ed chi ti\u00eau", wasteDeduction);
+        healthBreakdown.put("Kh\u00f4ng s\u1eed d\u1ee5ng", unusedDeduction);
+        healthBreakdown.put("Hi\u1ebfm d\u00f9ng", rarelyDeduction);
+        healthBreakdown.put("Tr\u00f9ng l\u1eb7p", dupDeduction);
+        String healthLabel = healthScore >= 90 ? "Tuy\u1ec7t v\u1eddi" : healthScore >= 70 ? "\u1ed4n" : "B\u00e1o đ\u1ed9ng";
+
         return DashboardResponse.builder()
                 .totalMonthlyCost(totalMonthly)
                 .totalYearlyCost(totalYearly)
@@ -83,6 +98,9 @@ public class DashboardService {
                 .wasteSubscriptions(wasteSubs)
                 .isPremium(user.getPlanType() == PlanType.PREMIUM)
                 .freeLimit(freeLimit)
+                .healthScore(healthScore)
+                .healthScoreLabel(healthLabel)
+                .healthScoreBreakdown(healthBreakdown)
                 .build();
     }
 

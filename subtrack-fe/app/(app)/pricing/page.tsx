@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Check, Star, Zap, Shield, Clock, CheckCircle2, Copy, CheckCheck } from 'lucide-react';
+import { Check, Star, Zap, Shield, Clock, CheckCircle2, Copy, CheckCheck, FileText, Bell, Crown } from 'lucide-react';
 import { paymentApi } from '@/lib/services';
 import { useAuth } from '@/lib/context/AuthContext';
 import { formatVND } from '@/lib/utils';
@@ -205,7 +205,7 @@ function PlanCard({
         ))}
         {/* Transfer content — read-only */}
         <div style={{ borderTop: `1px solid ${plan.highlight ? 'rgba(255,255,255,0.1)' : 'var(--border-light)'}`, paddingTop: 8 }}>
-          <div style={{ fontSize: '0.72rem', opacity: 0.6, marginBottom: 4 }}>📝 Nội dung chuyển khoản (bắt buộc, không được sửa)</div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: '0.72rem', opacity: 0.6, marginBottom: 4 }}><FileText size={12} /> Nội dung chuyển khoản (bắt buộc, không được sửa)</div>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <code style={{
               fontFamily: 'monospace', fontWeight: 800, fontSize: '0.88rem', letterSpacing: '0.04em',
@@ -332,7 +332,7 @@ export default function PricingPage() {
             <div style={{ width: 56, height: 56, background: '#10B981', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <CheckCircle2 size={28} color="white" />
             </div>
-            <div style={{ fontSize: '1.2rem', fontWeight: 800, color: '#065F46' }}>Bạn đang dùng Premium ⭐</div>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, fontSize: '1.2rem', fontWeight: 800, color: '#065F46' }}>Bạn đang dùng Premium <Crown size={20} color="#F59E0B" /></div>
             <div style={{ color: '#059669', fontSize: '0.9rem' }}>Tận hưởng toàn bộ tính năng không giới hạn.</div>
           </div>
         </motion.div>
@@ -349,7 +349,7 @@ export default function PricingPage() {
           <div style={{ color: '#B45309', fontSize: '0.9rem', lineHeight: 1.6 }}>
             Yêu cầu nâng cấp của bạn đã được ghi nhận.<br />
             Admin sẽ kiểm tra và xác nhận trong <strong>24 giờ</strong>.<br />
-            Bạn sẽ nhận thông báo sau khi được duyệt 🔔
+            <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>Bạn sẽ nhận thông báo sau khi được duyệt <Bell size={14} /></span>
           </div>
         </motion.div>
       )}

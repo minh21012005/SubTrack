@@ -3,14 +3,16 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import { notificationApi } from '@/lib/services';
-import { Bell, CheckCheck, Clock, AlarmClock, AlertTriangle, Megaphone } from 'lucide-react';
+import { Bell, CheckCheck, Clock, AlarmClock, AlertTriangle, Megaphone, Trash2, CheckCircle2, Star, X } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { vi } from 'date-fns/locale';
 
-const TYPE_ICON: Record<string, React.ReactNode> = {
-  RENEWAL_REMINDER: <AlarmClock size={18} color="var(--accent-orange)" />,
-  WASTE_ALERT: <AlertTriangle size={18} color="var(--accent-red)" />,
-  GENERAL: <Megaphone size={18} color="var(--primary)" />,
+const TYPE_CONFIG: Record<string, { icon: React.ReactNode; color: string; bg: string }> = {
+  RENEWAL_REMINDER: { icon: <Clock size={16} />, color: '#D97706', bg: '#FEF3C7' },
+  WASTE_ALERT:      { icon: <AlertTriangle size={16} />, color: 'var(--accent-red)', bg: '#FEF2F2' },
+  PAYMENT_APPROVED: { icon: <CheckCircle2 size={16} />, color: 'var(--accent-green)', bg: '#ECFDF5' },
+  PAYMENT_REJECTED: { icon: <X size={16} />, color: 'var(--accent-red)', bg: '#FEF2F2' },
+  GENERAL:          { icon: <Star size={16} />, color: 'var(--primary)', bg: 'var(--primary-light)' },
 };
 
 export default function NotificationsPage() {
@@ -29,6 +31,14 @@ export default function NotificationsPage() {
   const markOneMutation = useMutation({
     mutationFn: (id: string) => notificationApi.markRead(id),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['notifications'] }),
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: (id: string) => notificationApi.delete(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['notifications'] });
+      queryClient.invalidateQueries({ queryKey: ['notification-count'] });
+    },
   });
 
   const unread = notifs.filter((n) => n.status === 'UNREAD').length;
@@ -86,8 +96,8 @@ export default function NotificationsPage() {
                 transition: 'var(--transition)',
               }}
             >
-              <div style={{ flexShrink: 0, marginTop: 2, padding: 8, background: 'var(--bg)', borderRadius: 8, border: '1px solid var(--border-light)' }}>
-                {TYPE_ICON[notif.type] || <Megaphone size={18} color="var(--primary)" />}
+              <div style={{ flexShrink: 0, marginTop: 2, padding: 8, background: (TYPE_CONFIG[notif.type] || TYPE_CONFIG.GENERAL).bg, color: (TYPE_CONFIG[notif.type] || TYPE_CONFIG.GENERAL).color, borderRadius: 8, border: '1px solid var(--border-light)' }}>
+                {(TYPE_CONFIG[notif.type] || TYPE_CONFIG.GENERAL).icon}
               </div>
               <div style={{ flex: 1 }}>
                 <p style={{ fontSize: '0.9rem', color: 'var(--text-primary)', lineHeight: 1.5, fontWeight: notif.status === 'UNREAD' ? 600 : 400 }}>
@@ -101,9 +111,20 @@ export default function NotificationsPage() {
                   {formatDistanceToNow(new Date(notif.createdAt), { addSuffix: true, locale: vi })}
                 </div>
               </div>
-              {notif.status === 'UNREAD' && (
-                <div style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--primary)', flexShrink: 0, marginTop: 6 }} />
-              )}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                {notif.status === 'UNREAD' && (
+                  <div style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--primary)', flexShrink: 0, marginTop: 6 }} />
+                )}
+                <button 
+                  onClick={(e) => { e.stopPropagation(); deleteMutation.mutate(notif.id); }}
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4, color: 'var(--text-muted)' }}
+                  aria-label="Xóa thông báo"
+                  title="Xóa thông báo"
+                  disabled={deleteMutation.isPending}
+                >
+                  <Trash2 size={16} />
+                </button>
+              </div>
             </motion.div>
           ))}
         </div>

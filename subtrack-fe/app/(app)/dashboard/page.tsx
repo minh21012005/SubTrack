@@ -2,12 +2,13 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
-import { RefreshCw, Loader2, Plus, CreditCard, AlertTriangle, Zap, Info, Calendar, LayoutGrid } from 'lucide-react';
+import { RefreshCw, Loader2, Plus, CreditCard, AlertTriangle, Zap, Info, Calendar, LayoutGrid, Crown } from 'lucide-react';
 import Link from 'next/link';
 import { dashboardApi, subscriptionApi } from '@/lib/services';
 import { useAuth } from '@/lib/context/AuthContext';
 import ShockHero from '@/components/dashboard/ShockHero';
 import UpcomingCharges from '@/components/dashboard/UpcomingCharges';
+import HealthScoreWidget from '@/components/dashboard/HealthScoreWidget';
 import SubscriptionCard from '@/components/subscription/SubscriptionCard';
 import WasteAwarenessCard from '@/components/dashboard/WasteAwarenessCard';
 import { formatVND } from '@/lib/utils';
@@ -92,6 +93,15 @@ export default function DashboardPage() {
           {/* Shock Moment Hero */}
           <ShockHero data={data} />
 
+          {/* Health Score Widget — visible to all users */}
+          <HealthScoreWidget
+            score={data.healthScore}
+            label={data.healthScoreLabel}
+            breakdown={data.healthScoreBreakdown}
+            isPremium={!!user?.planType && user.planType === 'PREMIUM'}
+            hasSubscriptions={data.subscriptionCount > 0}
+          />
+
           {/* Alerts: Free limit & Premium expiry */}
           {!data.isPremium && data.subscriptionCount >= data.freeLimit && (
             <motion.div
@@ -106,8 +116,8 @@ export default function DashboardPage() {
               }}
             >
               <div>
-                <div style={{ fontWeight: 700, color: 'var(--primary)', marginBottom: 2 }}>
-                  <span style={{ marginRight: 6 }}>⭐</span> Bạn đã dùng hết {data.freeLimit} subscription miễn phí
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontWeight: 700, color: 'var(--primary)', marginBottom: 2 }}>
+                  <Crown size={16} color="var(--primary)" /> Bạn đã dùng hết {data.freeLimit} subscription miễn phí
                 </div>
                 <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
                   Nâng cấp Premium để thêm không giới hạn và phân tích nâng cao

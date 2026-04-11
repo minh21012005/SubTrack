@@ -48,4 +48,12 @@ public class NotificationController {
         notificationService.markAllRead(userDetails.getUsername());
         return ResponseEntity.ok(ApiResponse.ok("Đã đánh dấu tất cả đã đọc", null));
     }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<ApiResponse<Void>> delete(
+            @AuthenticationPrincipal UserDetails userDetails,
+            @PathVariable UUID id) {
+        notificationService.deleteNotification(userDetails.getUsername(), id);
+        return ResponseEntity.ok(ApiResponse.ok("Đã xóa thông báo", null));
+    }
 }

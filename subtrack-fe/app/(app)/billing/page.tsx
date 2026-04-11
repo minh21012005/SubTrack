@@ -48,21 +48,21 @@ export default function BillingPage() {
       </div>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
-        
+
         {/* Current Plan Card (Quick View) */}
-        <div className="card" style={{ 
+        <div className="card" style={{
           background: 'linear-gradient(135deg, var(--primary), var(--primary-dark))',
           color: 'white', border: 'none', position: 'relative', overflow: 'hidden'
         }}>
           <div style={{ position: 'absolute', right: -20, top: -20, opacity: 0.1 }}>
             <Crown size={120} />
           </div>
-          
+
           <div style={{ position: 'relative', zIndex: 1 }}>
             <div style={{ fontSize: '0.85rem', opacity: 0.8, marginBottom: 4, fontWeight: 500 }}>Gói hiện tại</div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 20 }}>
-              <div style={{ fontSize: '1.8rem', fontWeight: 900 }}>
-                {user?.planType === 'PREMIUM' ? '⭐ Premium' : 'Free Plan'}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: '1.8rem', fontWeight: 900 }}>
+                {user?.planType === 'PREMIUM' ? <span style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#FCD34D' }}><Crown size={28} color="#FCD34D" /> Premium</span> : 'Free Plan'}
               </div>
             </div>
 
@@ -111,7 +111,7 @@ export default function BillingPage() {
               </thead>
               <tbody>
                 {payments.map((p, i) => (
-                  <motion.tr 
+                  <motion.tr
                     key={p.id}
                     initial={{ opacity: 0, y: 5 }}
                     animate={{ opacity: 1, y: 0 }}

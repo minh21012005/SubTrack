@@ -92,6 +92,9 @@ export interface Dashboard {
   wasteSubscriptions: Subscription[];
   isPremium: boolean;
   freeLimit: number;
+  healthScore: number;
+  healthScoreLabel: string;
+  healthScoreBreakdown: Record<string, number>;
 }
 
 // ─── Waste ───────────────────────────────────────────────────────────────────

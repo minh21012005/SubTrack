@@ -5,6 +5,7 @@ import lombok.Data;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 
 @Data
 @Builder
@@ -19,7 +20,7 @@ public class DashboardResponse {
     // Counts
     private int subscriptionCount;
     private int activeCount;
-    private int wasteCount;       // unused + rarely
+    private int wasteCount;
     private int cancelledCount;
 
     // Upcoming charges
@@ -33,4 +34,10 @@ public class DashboardResponse {
     // Plan info
     private boolean isPremium;
     private int freeLimit;
+
+    // Health Score (0-100)
+    private int healthScore;
+    private String healthScoreLabel;
+    private Map<String, Integer> healthScoreBreakdown;
 }
+

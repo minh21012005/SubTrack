@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import {
   LayoutDashboard, CreditCard, AlertTriangle,
-  Settings, LogOut, TrendingUp, Plus, X, Shield, Star
+  Settings, LogOut, TrendingUp, Plus, X, Shield, Crown
 } from 'lucide-react';
 import { clearAuth, getInitials } from '@/lib/utils';
 import { useAuth } from '@/lib/context/AuthContext';
@@ -41,8 +41,8 @@ export default function Sidebar({ isOpen, onClose }: { isOpen?: boolean; onClose
           </div>
         </div>
         {onClose && (
-          <button 
-            className="btn btn-ghost mobile-only" 
+          <button
+            className="btn btn-ghost mobile-only"
             onClick={(e) => { e.stopPropagation(); onClose(); }}
             style={{ padding: 4, position: 'absolute', right: 16, top: 28 }}
           >
@@ -139,7 +139,7 @@ export default function Sidebar({ isOpen, onClose }: { isOpen?: boolean; onClose
             }}
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-              <Star size={14} fill="#FCD34D" color="#FCD34D" />
+              <Crown size={14} color="#FCD34D" />
               <span style={{ fontWeight: 800, fontSize: '0.9rem' }}>Nâng cấp Premium</span>
             </div>
             <div style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.75)' }}>Bắt đầu từ 29k/tháng. Không giới hạn!</div>
@@ -147,37 +147,37 @@ export default function Sidebar({ isOpen, onClose }: { isOpen?: boolean; onClose
         )}
 
         <div style={{ borderTop: '1px solid var(--border-light)', paddingTop: 12 }}>
-        {user && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
-            <div style={{
-              width: 36, height: 36,
-              background: 'linear-gradient(135deg, var(--primary-light), var(--primary))',
-              borderRadius: '50%',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: '0.8rem', fontWeight: 700, color: 'var(--primary)',
-            }}>
-              {getInitials(user.name || user.email)}
-            </div>
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                {user.name}
+          {user && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
+              <div style={{
+                width: 36, height: 36,
+                background: 'linear-gradient(135deg, var(--primary-light), var(--primary))',
+                borderRadius: '50%',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontSize: '0.8rem', fontWeight: 700, color: 'var(--primary)',
+              }}>
+                {getInitials(user.name || user.email)}
               </div>
-              <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: 4 }}>
-                {user.role === 'ADMIN'
-                  ? <><Shield size={10} color="var(--accent-red)" />Admin</>  
-                  : user.planType === 'PREMIUM' ? '⭐ Premium' : 'Free Plan'
-                }
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  {user.name}
+                </div>
+                <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: 4 }}>
+                  {user.role === 'ADMIN'
+                    ? <><Shield size={10} color="var(--accent-red)" />Admin</>
+                    : user.planType === 'PREMIUM' ? <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, color: '#F59E0B', fontWeight: 700 }}><Crown size={14} color="#F59E0B" /> Premium</span> : 'Free Plan'
+                  }
+                </div>
               </div>
             </div>
-          </div>
-        )}
-        <button
-          onClick={handleLogout}
-          className="btn btn-ghost btn-full btn-sm"
-          style={{ justifyContent: 'flex-start', color: 'var(--accent-red)' }}
-        >
-          <LogOut size={16} /> Đăng xuất
-        </button>
+          )}
+          <button
+            onClick={handleLogout}
+            className="btn btn-ghost btn-full btn-sm"
+            style={{ justifyContent: 'flex-start', color: 'var(--accent-red)' }}
+          >
+            <LogOut size={16} /> Đăng xuất
+          </button>
         </div>  {/* end inner border-top div */}
       </div>
     </aside>

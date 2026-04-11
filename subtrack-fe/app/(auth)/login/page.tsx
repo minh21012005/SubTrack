@@ -75,7 +75,7 @@ export default function LoginPage() {
         </Link>
 
         <h1 style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--text-primary)', marginBottom: 6 }}>
-          Chào mừng trở lại 👋
+          Chào mừng trở lại
         </h1>
         <p style={{ color: 'var(--text-secondary)', marginBottom: 28, fontSize: '0.95rem' }}>
           Đăng nhập để xem bạn đang tiêu bao nhiêu

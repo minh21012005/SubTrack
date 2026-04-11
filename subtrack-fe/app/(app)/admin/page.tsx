@@ -5,7 +5,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import {
   Shield, Users, CreditCard, TrendingUp, RefreshCw, Search,
-  CheckCircle2, XCircle, Clock, Check, X
+  CheckCircle2, XCircle, Clock, Check, X, Crown
 } from 'lucide-react';
 import { adminApi } from '@/lib/services';
 import { formatVND } from '@/lib/utils';
@@ -209,7 +209,7 @@ export default function AdminPage() {
                             {u.role === 'ADMIN' && <Shield size={10} />}{u.role}
                           </span>
                           <span style={{ display: 'inline-flex', padding: '2px 10px', borderRadius: 'var(--radius-full)', fontSize: '0.72rem', fontWeight: 600, background: u.planType === 'PREMIUM' ? 'var(--accent-green-light)' : 'var(--bg)', color: u.planType === 'PREMIUM' ? 'var(--accent-green)' : 'var(--text-muted)' }}>
-                            {u.planType === 'PREMIUM' ? '⭐ Premium' : 'Free'}
+                            {u.planType === 'PREMIUM' ? <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, color: '#F59E0B' }}><Crown size={12} color="#F59E0B" /> Premium</span> : 'Free'}
                           </span>
                         </div>
                       </td>

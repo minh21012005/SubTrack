@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronLeft, ChevronRight, Loader2, Search } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Loader2, Search, CheckCircle2, AlertCircle, AlertTriangle, Lightbulb } from 'lucide-react';
 import { presetApi, subscriptionApi } from '@/lib/services';
 import PresetGrid from '@/components/subscription/PresetGrid';
 import BrandLogo from '@/components/ui/BrandLogo';
@@ -309,13 +309,20 @@ export default function AddSubscriptionPage() {
                     <label className="form-label">Tình trạng sử dụng</label>
                     <div style={{ display: 'flex', gap: 8 }}>
                       {(['ACTIVE', 'RARELY', 'UNUSED'] as UsageStatus[]).map((status) => {
-                        const labels: Record<UsageStatus, string> = { ACTIVE: '✅ Đang dùng', RARELY: '🟡 Hiếm dùng', UNUSED: '🔴 Không dùng' };
+                        const iconMap = {
+                          ACTIVE: <CheckCircle2 size={14} color="#10B981" />,
+                          RARELY: <AlertCircle size={14} color="#F59E0B" />,
+                          UNUSED: <AlertTriangle size={14} color="#EF4444" />
+                        };
+                        const labelMap = { ACTIVE: 'Đang dùng', RARELY: 'Hiếm dùng', UNUSED: 'Không dùng' };
                         return (
                           <button key={status}
                             type="button"
                             className={`chip ${form.usageStatus === status ? 'active' : ''}`}
-                            onClick={() => setForm((f) => ({ ...f, usageStatus: status }))}>
-                            {labels[status]}
+                            onClick={() => setForm((f) => ({ ...f, usageStatus: status }))}
+                            style={{ display: 'flex', alignItems: 'center', gap: 6 }}
+                          >
+                            {iconMap[status]} {labelMap[status]}
                           </button>
                         );
                       })}
@@ -382,7 +389,7 @@ export default function AddSubscriptionPage() {
                   isPremium ? ['Tình trạng', form.usageStatus === 'ACTIVE' ? 'Đang dùng' : form.usageStatus === 'RARELY' ? 'Hiếm dùng' : 'Không dùng'] : null,
                   ...(form.notes ? [['Ghi chú', form.notes]] : []),
                   ...(!selectedPreset && form.websiteUrl ? [['Website', form.websiteUrl]] : []),
-                ].filter(Boolean).map(([key, val]) => (
+                ].filter((item): item is string[] => item !== null).map(([key, val]) => (
                   <div key={key} style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid var(--border-light)' }}>
                     <span style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>{key}</span>
                     <span style={{ fontWeight: 600, fontSize: '0.875rem' }}>{val}</span>
@@ -393,8 +400,11 @@ export default function AddSubscriptionPage() {
               {error && <div className="alert alert-error" style={{ marginBottom: 16 }}>{error}</div>}
 
               {isPremium && form.usageStatus !== 'ACTIVE' && (
-                <div className="alert alert-info" style={{ marginBottom: 16 }}>
-                  💡 Subscription này sẽ ngay lập tức được tính là <strong>lãng phí</strong> vì tình trạng không phải "Đang dùng".
+                <div className="alert alert-info" style={{ marginBottom: 16, display: 'flex', gap: 8, alignItems: 'flex-start' }}>
+                  <Lightbulb size={20} color="#D97706" style={{ flexShrink: 0 }} />
+                  <div>
+                    Subscription này sẽ ngay lập tức được tính là <strong>lãng phí</strong> vì tình trạng không phải "Đang dùng".
+                  </div>
                 </div>
               )}
 
