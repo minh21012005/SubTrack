@@ -3,6 +3,8 @@ package com.subtrack.controller;
 import com.subtrack.dto.request.LoginRequest;
 import com.subtrack.dto.request.RegisterRequest;
 import com.subtrack.dto.request.ChangePasswordRequest;
+import com.subtrack.dto.request.ForgotPasswordRequest;
+import com.subtrack.dto.request.ResetPasswordRequest;
 import com.subtrack.dto.response.ApiResponse;
 import com.subtrack.dto.response.AuthResponse;
 import com.subtrack.dto.response.UserResponse;
@@ -64,6 +66,18 @@ public class AuthController {
         return ResponseEntity.ok()
                 .header(HttpHeaders.SET_COOKIE, cookie.toString())
                 .body(ApiResponse.ok("Đăng nhập thành công", response));
+    }
+
+    @PostMapping("/forgot-password/send-otp")
+    public ResponseEntity<ApiResponse<Void>> forgotPasswordSendOtp(@Valid @RequestBody ForgotPasswordRequest request) {
+        authService.forgotPasswordSendOtp(request);
+        return ResponseEntity.ok(ApiResponse.ok("Mã xác thực khôi phục mật khẩu đã được gửi đến email", null));
+    }
+
+    @PostMapping("/forgot-password/reset")
+    public ResponseEntity<ApiResponse<Void>> resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
+        authService.resetPassword(request);
+        return ResponseEntity.ok(ApiResponse.ok("Mật khẩu của bạn đã được thay đổi thành công", null));
     }
 
     @PostMapping("/refresh")

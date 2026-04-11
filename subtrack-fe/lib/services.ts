@@ -25,6 +25,12 @@ export const authApi = {
 
   changePassword: (data: any) =>
     apiClient.put<ApiResponse<void>>('/api/auth/password', data),
+
+  sendForgotPasswordOtp: (email: string) =>
+    apiClient.post<ApiResponse<void>>('/api/auth/forgot-password/send-otp', { email }),
+
+  resetPassword: (data: any) =>
+    apiClient.post<ApiResponse<void>>('/api/auth/forgot-password/reset', data),
 };
 
 // ─── Dashboard ───────────────────────────────────────────────────────────────

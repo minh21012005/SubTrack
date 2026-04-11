@@ -3,6 +3,8 @@ package com.subtrack.service;
 import com.subtrack.dto.request.LoginRequest;
 import com.subtrack.dto.request.RegisterRequest;
 import com.subtrack.dto.request.ChangePasswordRequest;
+import com.subtrack.dto.request.ForgotPasswordRequest;
+import com.subtrack.dto.request.ResetPasswordRequest;
 import com.subtrack.dto.response.AuthResponse;
 import com.subtrack.dto.response.UserResponse;
 import com.subtrack.entity.User;
@@ -121,6 +123,7 @@ public class AuthService {
                 .build();
     }
 
+    @Transactional
     public AuthResponse login(LoginRequest request) {
         try {
             authenticationManager.authenticate(
@@ -216,6 +219,64 @@ public class AuthService {
 
         user.setPasswordHash(passwordEncoder.encode(request.getNewPassword()));
         userRepository.save(user);
+    }
+
+    @Transactional
+    public void forgotPasswordSendOtp(ForgotPasswordRequest request) {
+        User user = userRepository.findByEmail(request.getEmail())
+                .orElseThrow(() -> new BadRequestException("Tài khoản không tồn tại trong hệ thống."));
+
+        // Check if recently sent too many OTPs (Anti-spam logic)
+        int recentSends = otpTokenRepository.countByEmailAndCreatedAtAfter(
+                request.getEmail(),
+                java.time.OffsetDateTime.now().minusMinutes(5)
+        );
+        if (recentSends >= 3) {
+            throw new BadRequestException("Bạn đã yêu cầu gửi mã quá nhiều lần. Vui lòng thử lại sau 5 phút.");
+        }
+
+        // Generate 6 digit OTP
+        String otpCode = String.format("%06d", new java.util.Random().nextInt(999999));
+
+        OtpToken otpToken = OtpToken.builder()
+                .email(request.getEmail())
+                .otp(otpCode)
+                .expiresAt(java.time.OffsetDateTime.now().plusMinutes(5)) // OTP expires in 5 minutes
+                .isUsed(false)
+                .build();
+        otpTokenRepository.save(otpToken);
+
+        emailService.sendOtpEmailAsync(request.getEmail(), otpCode);
+    }
+
+    @Transactional
+    public void resetPassword(ResetPasswordRequest request) {
+        User user = userRepository.findByEmail(request.getEmail())
+                .orElseThrow(() -> new BadRequestException("Tài khoản không tồn tại."));
+
+        // Verify OTP
+        OtpToken otpToken = otpTokenRepository.findTopByEmailOrderByCreatedAtDesc(request.getEmail())
+                .orElseThrow(() -> new BadRequestException("Chưa gửi OTP cho email này"));
+
+        if (otpToken.isUsed()) {
+            throw new BadRequestException("Mã OTP này đã được sử dụng");
+        }
+
+        if (otpToken.getExpiresAt().isBefore(java.time.OffsetDateTime.now())) {
+            throw new BadRequestException("Mã OTP đã hết hạn");
+        }
+
+        if (!otpToken.getOtp().equals(request.getOtp())) {
+            throw new BadRequestException("Mã OTP không chính xác");
+        }
+
+        // OTP Valid - Update password
+        user.setPasswordHash(passwordEncoder.encode(request.getNewPassword()));
+        userRepository.save(user);
+
+        // Mark OTP as used
+        otpToken.setUsed(true);
+        otpTokenRepository.save(otpToken);
     }
 
     private UserResponse toUserResponse(User user) {
