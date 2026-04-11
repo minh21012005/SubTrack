@@ -161,7 +161,7 @@ export default function SettingsPage() {
               ))}
               {user?.planType === 'PREMIUM'
                 ? <div className="badge badge-purple" style={{ marginTop: 8 }}>Gói hiện tại</div>
-                : <Link href="/pricing" className="btn btn-primary btn-sm btn-full" style={{ marginTop: 8 }}>Nâng cấp ngay</Link>}
+                : <Link href="/pricing" className="btn btn-outline btn-sm btn-full" style={{ marginTop: 8 }}>Xem chi tiết gói</Link>}
             </div>
           </div>
         </div>

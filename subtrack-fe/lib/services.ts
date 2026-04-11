@@ -3,6 +3,7 @@ import type {
   ApiResponse, AuthResponse, Dashboard, Subscription,
   AddSubscriptionRequest, WasteAnalysis, Preset,
   Notification, ActionType, User, AdminUser, PaymentRequest,
+  SpendingTrend, SavingGoal, SavingGoalRequest,
 } from './types';
 
 // ─── Auth ────────────────────────────────────────────────────────────────────
@@ -30,6 +31,9 @@ export const authApi = {
 export const dashboardApi = {
   get: () =>
     apiClient.get<ApiResponse<Dashboard>>('/api/dashboard'),
+
+  getSpendingTrend: () =>
+    apiClient.get<ApiResponse<SpendingTrend[]>>('/api/dashboard/spending-trend'),
 };
 
 // ─── Subscriptions ───────────────────────────────────────────────────────────
@@ -108,4 +112,19 @@ export const paymentApi = {
 
   getMyRequests: () =>
     apiClient.get<ApiResponse<PaymentRequest[]>>('/api/payments/my-requests'),
+};
+
+// ─── Saving Goals ─────────────────────────────────────────────────────────────
+export const savingGoalApi = {
+  getGoals: () =>
+    apiClient.get<ApiResponse<SavingGoal[]>>('/api/saving-goals'),
+
+  createGoal: (data: SavingGoalRequest) =>
+    apiClient.post<ApiResponse<SavingGoal>>('/api/saving-goals', data),
+
+  addFunds: (id: string, amount: number) =>
+    apiClient.put<ApiResponse<SavingGoal>>(`/api/saving-goals/${id}/add-funds`, null, { params: { amount } }),
+
+  deleteGoal: (id: string) =>
+    apiClient.delete<ApiResponse<void>>(`/api/saving-goals/${id}`),
 };

@@ -6,6 +6,7 @@ import com.subtrack.entity.User;
 import com.subtrack.enums.PlanType;
 import com.subtrack.enums.UsageStatus;
 import com.subtrack.exception.NotFoundException;
+import com.subtrack.repository.SpendingSnapshotRepository;
 import com.subtrack.repository.SubscriptionRepository;
 import com.subtrack.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -27,6 +28,7 @@ public class DashboardService {
 
     private final UserRepository userRepository;
     private final SubscriptionRepository subscriptionRepository;
+    private final SpendingSnapshotRepository snapshotRepository;
     private final WasteEngine wasteEngine;
 
     @Value("${app.free-subscription-limit:5}")
@@ -146,5 +148,21 @@ public class DashboardService {
                 .potentialDuplicate(isDup)
                 .daysUntilRenewal((int) Math.max(0, days))
                 .build();
+    }
+
+    public List<SpendingSnapshotResponse> getSpendingTrend(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new NotFoundException("Tài khoản không tồn tại"));
+        if (user.getPlanType() != PlanType.PREMIUM) {
+            throw new com.subtrack.exception.ForbiddenException("Tính năng này chỉ dành cho Premium.");
+        }
+        return snapshotRepository.findByUserIdOrderByMonthYearAsc(user.getId()).stream()
+                .map(s -> SpendingSnapshotResponse.builder()
+                        .monthYear(s.getMonthYear())
+                        .totalCost(s.getTotalCost())
+                        .wasteCost(s.getWasteCost())
+                        .subscriptionCount(s.getSubscriptionCount())
+                        .build())
+                .collect(java.util.stream.Collectors.toList());
     }
 }

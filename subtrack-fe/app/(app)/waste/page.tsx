@@ -245,8 +245,8 @@ export default function WastePage() {
                 <p style={{ color: '#B45309', marginBottom: 24, fontSize: '0.9rem', lineHeight: 1.5 }}>
                   Khám phá chi tiết danh sách ứng dụng gây lãng phí, nhận cảnh báo trùng lặp và đề xuất tự động để cắt giảm {formatVND(data.potentialSavings)}/tháng.
                 </p>
-                <Link href="/pricing" className="btn btn-primary btn-full" style={{ background: '#D97706', border: 'none', boxShadow: '0 4px 14px rgba(217, 119, 6, 0.4)' }}>
-                  <Star size={16} fill="currentColor" /> Nâng cấp Premium ngay
+                <Link href="/pricing" className="btn btn-outline" style={{ color: '#D97706', borderColor: '#D97706', background: 'white' }}>
+                  Xem chi tiết gói Premium
                 </Link>
               </div>
             </div>

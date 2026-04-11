@@ -200,23 +200,13 @@ export default function DashboardPage() {
             />
           </div>
 
-          {/* FOMO Waste Banner */}
-          {user?.planType === 'PREMIUM' ? (
-            data.totalWasteCost > 0 && (
-              <WasteAwarenessCard
-                isPremium={true}
-                estimatedWaste={data.totalWasteCost}
-                percentage={data.wastePercentage}
-              />
-            )
-          ) : (
-            data.subscriptionCount > 0 && (
-              <WasteAwarenessCard
-                isPremium={false}
-                estimatedWaste={data.totalMonthlyCost * 0.4}
-                percentage={40}
-              />
-            )
+          {/* High Waste Alert */}
+          {user?.planType === 'PREMIUM' && data.totalWasteCost > 0 && (
+            <WasteAwarenessCard
+              isPremium={true}
+              estimatedWaste={data.totalWasteCost}
+              percentage={data.wastePercentage}
+            />
           )}
 
           {/* Upcoming Charges */}

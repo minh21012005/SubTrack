@@ -33,6 +33,7 @@ public class SubscriptionService {
     private final ServicePresetRepository presetRepository;
     private final UserActionRepository userActionRepository;
     private final RenewalReminderRepository reminderRepository;
+    private final SavingGoalRepository savingGoalRepository;
     private final WasteEngine wasteEngine;
 
     @Value("${app.free-subscription-limit:5}")
@@ -147,6 +148,19 @@ public class SubscriptionService {
             case CANCEL -> {
                 sub.setActionStatus(ActionStatus.CANCEL);
                 sub.setCancelled(true);
+                
+                // Auto deposit into first open saving goal
+                List<SavingGoal> openGoals = savingGoalRepository.findByUserIdAndAchievedFalse(user.getId());
+                if (!openGoals.isEmpty()) {
+                    SavingGoal goal = openGoals.get(0);
+                    java.math.BigDecimal deposit = wasteEngine.toMonthly(sub.getPrice(), sub.getBillingCycle());
+                    goal.setCurrentSaved(goal.getCurrentSaved().add(deposit));
+                    if (goal.getCurrentSaved().compareTo(goal.getTargetAmount()) >= 0) {
+                        goal.setAchieved(true);
+                        goal.setCurrentSaved(goal.getTargetAmount());
+                    }
+                    savingGoalRepository.save(goal);
+                }
             }
             case MARK_RARELY -> {
                 sub.setUsageStatus(UsageStatus.RARELY);

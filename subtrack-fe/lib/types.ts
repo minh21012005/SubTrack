@@ -200,6 +200,28 @@ export interface PaymentRequest {
   verifiedByName?: string;
 }
 
+// ─── Sprint 2: Spending Trend ─────────────────────────────────────────────────
+export interface SpendingTrend {
+  monthYear: string;
+  totalCost: number;
+  wasteCost: number;
+  subscriptionCount: number;
+}
+
+// ─── Sprint 2: Saving Goals ───────────────────────────────────────────────────
+export interface SavingGoal {
+  id: string;
+  name: string;
+  targetAmount: number;
+  currentSaved: number;
+  achieved: boolean;
+}
+
+export interface SavingGoalRequest {
+  name: string;
+  targetAmount: number;
+}
+
 // ─── API wrapper ─────────────────────────────────────────────────────────────
 export interface ApiResponse<T> {
   success: boolean;

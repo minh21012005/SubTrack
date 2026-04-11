@@ -97,14 +97,6 @@ export default function BillingPage() {
                 </div>
               </div>
             )}
-            
-            {user?.planType !== 'PREMIUM' && (
-              <div style={{ marginTop: 16 }}>
-                <Link href="/pricing" className="btn btn-primary btn-sm" style={{ fontWeight: 700 }}>
-                  <Crown size={14} /> Nâng cấp Premium ngay
-                </Link>
-              </div>
-            )}
           </div>
         </div>
 

@@ -3,18 +3,19 @@
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import {
-  LayoutDashboard, CreditCard, AlertTriangle,
-  Settings, LogOut, TrendingUp, Plus, X, Shield, Crown
+  Settings, LogOut, TrendingUp, Plus, X, Shield, Crown, Target, BarChart3, LayoutDashboard, CreditCard, AlertTriangle
 } from 'lucide-react';
 import { clearAuth, getInitials } from '@/lib/utils';
 import { useAuth } from '@/lib/context/AuthContext';
 
 const NAV_ITEMS = [
-  { href: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
-  { href: '/subscriptions', icon: CreditCard, label: 'Subscriptions' },
-  { href: '/waste', icon: AlertTriangle, label: 'Waste Analysis' },
-  { href: '/billing', icon: TrendingUp, label: 'Lịch sử thanh toán' },
-  { href: '/settings', icon: Settings, label: 'Cài đặt' },
+  { href: '/dashboard', icon: LayoutDashboard, label: 'Dashboard', premium: false },
+  { href: '/analytics', icon: BarChart3, label: 'Phân tích xu hướng', premium: true },
+  { href: '/waste', icon: AlertTriangle, label: 'Waste Analysis', premium: true },
+  { href: '/goals', icon: Target, label: 'Mục tiêu tiết kiệm', premium: true },
+  { href: '/subscriptions', icon: CreditCard, label: 'Subscriptions', premium: false },
+  { href: '/billing', icon: TrendingUp, label: 'Lịch sử thanh toán', premium: false },
+  { href: '/settings', icon: Settings, label: 'Cài đặt', premium: false },
 ];
 
 export default function Sidebar({ isOpen, onClose }: { isOpen?: boolean; onClose?: () => void }) {
@@ -60,40 +61,44 @@ export default function Sidebar({ isOpen, onClose }: { isOpen?: boolean; onClose
 
       {/* Nav Items */}
       <nav style={{ flex: 1, padding: '8px 12px', display: 'flex', flexDirection: 'column', gap: 2 }}>
-        {NAV_ITEMS.map(({ href, icon: Icon, label }) => {
-          const active = pathname === href || pathname.startsWith(href + '/');
+        {NAV_ITEMS.map((item) => {
+          const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
+          const isPremiumBlocked = item.premium && user?.planType !== 'PREMIUM';
           return (
             <Link
-              key={href}
-              href={href}
+              key={item.href}
+              href={item.href}
+              onClick={onClose}
               style={{
                 display: 'flex',
                 alignItems: 'center',
                 gap: 12,
                 padding: '10px 12px',
                 borderRadius: 'var(--radius-sm)',
-                fontWeight: active ? 600 : 500,
+                fontWeight: isActive ? 600 : 500,
                 fontSize: '0.9rem',
-                color: active ? 'var(--primary)' : 'var(--text-secondary)',
-                background: active ? 'var(--primary-light)' : 'transparent',
+                color: isActive ? 'var(--primary)' : 'var(--text-secondary)',
+                background: isActive ? 'var(--primary-light)' : 'transparent',
                 transition: 'var(--transition)',
               }}
               onMouseEnter={(e) => {
-                if (!active) {
+                if (!isActive) {
                   (e.currentTarget as HTMLElement).style.background = 'var(--border-light)';
                   (e.currentTarget as HTMLElement).style.color = 'var(--text-primary)';
                 }
               }}
               onMouseLeave={(e) => {
-                if (!active) {
+                if (!isActive) {
                   (e.currentTarget as HTMLElement).style.background = 'transparent';
                   (e.currentTarget as HTMLElement).style.color = 'var(--text-secondary)';
                 }
               }}
-              onClick={onClose}
             >
-              <Icon size={18} strokeWidth={1.75} />
-              {label}
+              <item.icon size={18} strokeWidth={1.75} />
+              <span style={{ flex: 1 }}>{item.label}</span>
+              {isPremiumBlocked && (
+                <Crown size={14} color="#F59E0B" />
+              )}
             </Link>
           );
         })}
@@ -126,26 +131,6 @@ export default function Sidebar({ isOpen, onClose }: { isOpen?: boolean; onClose
 
       {/* User Footer */}
       <div style={{ padding: '0 16px 16px' }}>
-        {/* Go Premium CTA for FREE users */}
-        {user && user.planType === 'FREE' && user.role !== 'ADMIN' && (
-          <Link href="/pricing" onClick={onClose}
-            style={{
-              display: 'block', marginBottom: 12,
-              background: 'linear-gradient(135deg, #4F46E5, #7C3AED)',
-              borderRadius: 'var(--radius-lg)', padding: '14px 16px',
-              textDecoration: 'none', color: 'white',
-              boxShadow: '0 4px 16px -4px rgba(79,70,229,0.45)',
-              transition: 'var(--transition)',
-            }}
-          >
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-              <Crown size={14} color="#FCD34D" />
-              <span style={{ fontWeight: 800, fontSize: '0.9rem' }}>Nâng cấp Premium</span>
-            </div>
-            <div style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.75)' }}>Bắt đầu từ 29k/tháng. Không giới hạn!</div>
-          </Link>
-        )}
-
         <div style={{ borderTop: '1px solid var(--border-light)', paddingTop: 12 }}>
           {user && (
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
