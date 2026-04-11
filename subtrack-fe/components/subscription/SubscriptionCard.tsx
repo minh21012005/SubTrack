@@ -129,10 +129,13 @@ export default function SubscriptionCard({ subscription: sub, onAction, onDelete
         </div>
       )}
 
-      {/* Days until renewal for Free users */}
-      {!isPremium && !isCancelled && (
-        <div style={{ marginTop: 12, fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
-          Gia hạn sau: {sub.daysUntilRenewal === 0 ? 'hôm nay' : `${sub.daysUntilRenewal} ngày`}
+      {/* Days until renewal info */}
+      {!isCancelled && (!isPremium || !hasWaste) && (
+        <div style={{ marginTop: 12, fontSize: '0.75rem', color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: 4 }}>
+          <span style={{ opacity: 0.8 }}>Gia hạn sau:</span>
+          <span style={{ fontWeight: 600, color: sub.daysUntilRenewal <= 3 ? 'var(--accent-orange)' : 'var(--text-primary)' }}>
+            {sub.daysUntilRenewal === 0 ? 'hôm nay' : `${sub.daysUntilRenewal} ngày`}
+          </span>
         </div>
       )}
 
