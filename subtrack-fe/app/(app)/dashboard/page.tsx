@@ -91,7 +91,7 @@ export default function DashboardPage() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
 
           {/* Shock Moment Hero */}
-          <ShockHero data={data} />
+          <ShockHero data={data} isPremium={user?.planType === 'PREMIUM'} />
 
           {/* Health Score Widget — visible to all users */}
           <HealthScoreWidget

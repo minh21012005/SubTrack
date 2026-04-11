@@ -2,6 +2,7 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
+import Link from 'next/link';
 import { CreditCard, Clock, CheckCircle2, XCircle, Crown, Calendar, ReceiptText } from 'lucide-react';
 import { paymentApi } from '@/lib/services';
 import { formatVND } from '@/lib/utils';
@@ -51,31 +52,57 @@ export default function BillingPage() {
 
         {/* Current Plan Card (Quick View) */}
         <div className="card" style={{
-          background: 'linear-gradient(135deg, var(--primary), var(--primary-dark))',
-          color: 'white', border: 'none', position: 'relative', overflow: 'hidden'
+          background: user?.planType === 'PREMIUM' ? 'linear-gradient(135deg, #0F172A, #1E293B)' : 'var(--bg-card)',
+          color: user?.planType === 'PREMIUM' ? 'white' : 'var(--text-primary)',
+          border: user?.planType === 'PREMIUM' ? 'none' : '1px solid var(--border)',
+          position: 'relative', overflow: 'hidden',
+          boxShadow: user?.planType === 'PREMIUM' ? '0 10px 30px -10px rgba(15,23,42,0.5)' : 'var(--shadow-sm)',
         }}>
-          <div style={{ position: 'absolute', right: -20, top: -20, opacity: 0.1 }}>
-            <Crown size={120} />
-          </div>
-
+          {user?.planType === 'PREMIUM' && (
+            <div style={{ position: 'absolute', right: -20, top: -20, opacity: 0.05, color: '#F59E0B' }}>
+              <Crown size={140} />
+            </div>
+          )}
+          
           <div style={{ position: 'relative', zIndex: 1 }}>
-            <div style={{ fontSize: '0.85rem', opacity: 0.8, marginBottom: 4, fontWeight: 500 }}>Gói hiện tại</div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 20 }}>
+            <div style={{ 
+              fontSize: '0.85rem', 
+              color: user?.planType === 'PREMIUM' ? 'rgba(255,255,255,0.7)' : 'var(--text-secondary)', 
+              marginBottom: 4, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' 
+            }}>
+              Gói dịch vụ hiện tại
+            </div>
+            
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: user?.planType === 'PREMIUM' ? 24 : 0 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: '1.8rem', fontWeight: 900 }}>
-                {user?.planType === 'PREMIUM' ? <span style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#FCD34D' }}><Crown size={28} color="#FCD34D" /> Premium</span> : 'Free Plan'}
+                {user?.planType === 'PREMIUM' ? (
+                  <span style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#FCD34D' }}>
+                    <Crown size={28} color="#FCD34D" /> Premium
+                  </span>
+                ) : (
+                  <span style={{ color: 'var(--text-primary)' }}>Free Plan</span>
+                )}
               </div>
             </div>
 
             {user?.planType === 'PREMIUM' && user.planExpiresAt && (
-              <div style={{ display: 'flex', gap: 24 }}>
+              <div style={{ display: 'flex', gap: 32 }}>
                 <div>
-                  <div style={{ fontSize: '0.72rem', opacity: 0.7, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Chu kỳ</div>
-                  <div style={{ fontWeight: 600 }}>{user.billingPeriod === 'YEARLY' ? 'Hàng năm' : 'Hàng tháng'}</div>
+                  <div style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 2 }}>Chu kỳ</div>
+                  <div style={{ fontWeight: 600, fontSize: '0.95rem' }}>{user.billingPeriod === 'YEARLY' ? 'Hàng năm' : 'Hàng tháng'}</div>
                 </div>
                 <div>
-                  <div style={{ fontSize: '0.72rem', opacity: 0.7, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Ngày hết hạn</div>
-                  <div style={{ fontWeight: 600 }}>{new Intl.DateTimeFormat('vi-VN').format(new Date(user.planExpiresAt))}</div>
+                  <div style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 2 }}>Ngày hết hạn</div>
+                  <div style={{ fontWeight: 600, fontSize: '0.95rem' }}>{new Intl.DateTimeFormat('vi-VN').format(new Date(user.planExpiresAt))}</div>
                 </div>
+              </div>
+            )}
+            
+            {user?.planType !== 'PREMIUM' && (
+              <div style={{ marginTop: 16 }}>
+                <Link href="/pricing" className="btn btn-primary btn-sm" style={{ fontWeight: 700 }}>
+                  <Crown size={14} /> Nâng cấp Premium ngay
+                </Link>
               </div>
             )}
           </div>

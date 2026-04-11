@@ -7,7 +7,7 @@ import { formatVND } from '@/lib/utils';
 import type { Dashboard } from '@/lib/types';
 import Link from 'next/link';
 
-export default function ShockHero({ data }: { data: Dashboard }) {
+export default function ShockHero({ data, isPremium }: { data: Dashboard; isPremium?: boolean }) {
   const hasWaste = data.totalWasteCost > 0;
 
   return (
@@ -18,9 +18,11 @@ export default function ShockHero({ data }: { data: Dashboard }) {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
         style={{
-          background: 'linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #4c1d95 100%)',
+          background: isPremium 
+            ? 'linear-gradient(135deg, #0F172A 0%, #1E293B 50%, #020617 100%)' 
+            : 'linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #4c1d95 100%)',
           borderRadius: 'var(--radius-xl)',
-          padding: '40px 40px 36px',
+          padding: '28px 32px 24px',
           color: 'white',
           position: 'relative',
           overflow: 'hidden',
@@ -41,29 +43,35 @@ export default function ShockHero({ data }: { data: Dashboard }) {
         }} />
 
         <div style={{ position: 'relative', zIndex: 1 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12, opacity: 0.7 }}>
-            <DollarSign size={16} />
-            <span style={{ fontSize: '0.875rem', fontWeight: 500, letterSpacing: '0.05em' }}>
-              CHI PHÍ HÀNG THÁNG
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+            <span style={{ 
+              display: 'inline-flex', alignItems: 'center', gap: 6,
+              background: 'rgba(255,255,255,0.1)', padding: '5px 12px',
+              borderRadius: 'var(--radius-full)',
+              fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em',
+              color: isPremium ? '#FCD34D' : 'rgba(255,255,255,0.9)'
+            }}>
+              <DollarSign size={14} strokeWidth={2.5} />
+              Chi phí hàng tháng
             </span>
           </div>
 
-          <div style={{ fontSize: 'clamp(2.5rem, 5vw, 4rem)', fontWeight: 900, letterSpacing: '-0.04em', lineHeight: 1.1, marginBottom: 8 }}>
+          <div style={{ fontSize: 'clamp(2.4rem, 5vw, 3.2rem)', fontWeight: 900, letterSpacing: '-0.04em', lineHeight: 1.1, marginBottom: 4, color: 'white' }}>
             <AnimatedCounter
               value={data.totalMonthlyCost}
               formatter={(v) => formatVND(v)}
             />
           </div>
 
-          <div style={{ fontSize: '1rem', opacity: 0.6, marginBottom: 24 }}>
+          <div style={{ fontSize: '0.9rem', color: 'rgba(255,255,255,0.6)', fontWeight: 500, marginBottom: 24 }}>
             ≈ {formatVND(data.totalYearlyCost)} / năm
           </div>
 
           {/* Stats row */}
           <div style={{ display: 'flex', gap: 32, flexWrap: 'wrap' }}>
-            <Stat label="Subscription" value={String(data.subscriptionCount)} />
-            <Stat label="Đang dùng" value={String(data.activeCount)} />
-            <Stat label="Đã hủy" value={String(data.cancelledCount)} />
+            <Stat label="Subscription" value={String(data.subscriptionCount)} isPremium={isPremium} />
+            <Stat label="Đang dùng" value={String(data.activeCount)} isPremium={isPremium} />
+            <Stat label="Đã hủy" value={String(data.cancelledCount)} isPremium={isPremium} />
           </div>
         </div>
       </motion.div>
@@ -72,11 +80,11 @@ export default function ShockHero({ data }: { data: Dashboard }) {
   );
 }
 
-function Stat({ label, value }: { label: string; value: string }) {
+function Stat({ label, value, isPremium }: { label: string; value: string; isPremium?: boolean }) {
   return (
     <div>
-      <div style={{ fontSize: '1.4rem', fontWeight: 800 }}>{value}</div>
-      <div style={{ fontSize: '0.75rem', opacity: 0.6, marginTop: 2 }}>{label}</div>
+      <div style={{ fontSize: '1.3rem', fontWeight: 900, color: 'white' }}>{value}</div>
+      <div style={{ fontSize: '0.72rem', color: isPremium ? 'rgba(252,211,77,0.7)' : 'rgba(255,255,255,0.6)', marginTop: 2, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{label}</div>
     </div>
   );
 }
