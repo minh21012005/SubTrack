@@ -38,13 +38,13 @@ public class DashboardService {
         List<Subscription> activeSubs = allSubs.stream().filter(s -> !s.isCancelled()).collect(Collectors.toList());
         List<String> duplicateCategories = wasteEngine.findDuplicateCategories(activeSubs);
 
-        // Costs
+        // Costs — all normalized to VND for aggregation across mixed currencies
         BigDecimal totalMonthly = activeSubs.stream()
-                .map(s -> wasteEngine.toMonthly(s.getPrice(), s.getBillingCycle()))
+                .map(wasteEngine::toMonthlyVnd)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
-        BigDecimal totalYearly = totalMonthly.multiply(BigDecimal.valueOf(12)).setScale(2, RoundingMode.HALF_UP);
+        BigDecimal totalYearly = totalMonthly.multiply(BigDecimal.valueOf(12)).setScale(0, RoundingMode.HALF_UP);
         BigDecimal totalWaste = activeSubs.stream()
-                .map(wasteEngine::calculateWaste)
+                .map(wasteEngine::calculateWasteVnd)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
         double wastePercent = totalMonthly.compareTo(BigDecimal.ZERO) > 0

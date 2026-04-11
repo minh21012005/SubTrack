@@ -17,8 +17,11 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class WasteEngine {
 
+    private final CurrencyConverter currencyConverter;
+
     /**
-     * Convert a subscription price to its monthly equivalent.
+     * Convert a subscription price to its monthly equivalent (same currency).
+     * Use this for per-subscription display.
      */
     public BigDecimal toMonthly(BigDecimal price, BillingCycle cycle) {
         return switch (cycle) {
@@ -139,5 +142,27 @@ public class WasteEngine {
                             .build();
                 })
                 .collect(Collectors.toList());
+    }
+
+    /**
+     * Convert a subscription's monthly cost to VND for aggregation.
+     * Use this when summing costs across subscriptions with mixed currencies.
+     */
+    public BigDecimal toMonthlyVnd(Subscription sub) {
+        BigDecimal monthly = toMonthly(sub.getPrice(), sub.getBillingCycle());
+        return currencyConverter.toVnd(monthly, sub.getCurrency());
+    }
+
+    /**
+     * Calculate the waste cost in VND for aggregation purposes.
+     */
+    public BigDecimal calculateWasteVnd(Subscription sub) {
+        if (sub.isCancelled()) return BigDecimal.ZERO;
+        BigDecimal monthlyVnd = toMonthlyVnd(sub);
+        return switch (sub.getUsageStatus()) {
+            case UNUSED -> monthlyVnd;
+            case RARELY -> monthlyVnd.multiply(BigDecimal.valueOf(0.5)).setScale(0, RoundingMode.HALF_UP);
+            case ACTIVE -> BigDecimal.ZERO;
+        };
     }
 }

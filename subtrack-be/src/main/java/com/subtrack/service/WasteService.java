@@ -32,12 +32,13 @@ public class WasteService {
 
         List<String> duplicateCategories = wasteEngine.findDuplicateCategories(activeSubs);
 
+        // All totals normalized to VND for cross-currency comparison
         BigDecimal totalMonthly = activeSubs.stream()
-                .map(s -> wasteEngine.toMonthly(s.getPrice(), s.getBillingCycle()))
+                .map(wasteEngine::toMonthlyVnd)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
         BigDecimal totalWaste = activeSubs.stream()
-                .map(wasteEngine::calculateWaste)
+                .map(wasteEngine::calculateWasteVnd)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
         double wastePercent = totalMonthly.compareTo(BigDecimal.ZERO) > 0
@@ -68,15 +69,16 @@ public class WasteService {
         return subs.stream()
                 .filter(s -> s.getUsageStatus() == status)
                 .map(s -> {
-                    BigDecimal monthly = wasteEngine.toMonthly(s.getPrice(), s.getBillingCycle());
-                    BigDecimal waste = wasteEngine.calculateWaste(s);
+                    // Per-item costs in VND for consistent display on waste page
+                    BigDecimal monthlyVnd = wasteEngine.toMonthlyVnd(s);
+                    BigDecimal wasteVnd = wasteEngine.calculateWasteVnd(s);
                     boolean isDup = wasteEngine.isPotentialDuplicate(s, duplicates);
                     return WasteItemResponse.builder()
                             .subscriptionId(s.getId())
                             .name(s.getName())
                             .category(s.getCategory())
-                            .monthlyCost(monthly)
-                            .wasteCost(waste)
+                            .monthlyCost(monthlyVnd)
+                            .wasteCost(wasteVnd)
                             .wastePercentage(wasteEngine.getWastePercentage(s))
                             .usageStatus(s.getUsageStatus())
                             .iconUrl(s.getIconUrl())

@@ -42,6 +42,8 @@ jwt:
 
 app:
   free-subscription-limit: ${APP_FREE_LIMIT:5}
+  exchange-rate:
+    usd-to-vnd: ${USD_TO_VND:26000}
   reminder:
     cron: "0 0 8 * * *"
   cors:

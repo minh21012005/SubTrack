@@ -2,7 +2,7 @@
 
 import { motion } from 'framer-motion';
 import { AlertTriangle, CheckCircle, XCircle, RotateCcw, ExternalLink, Copy, Trash2 } from 'lucide-react';
-import { formatVND, categoryLabel, billingCycleLabel } from '@/lib/utils';
+import { formatCurrency, formatVND, categoryLabel, billingCycleLabel } from '@/lib/utils';
 import BrandLogo from '@/components/ui/BrandLogo';
 import type { Subscription, ActionType } from '@/lib/types';
 import { useAuth } from '@/lib/context/AuthContext';
@@ -99,10 +99,10 @@ export default function SubscriptionCard({ subscription: sub, onAction, onDelete
         {/* Price */}
         <div style={{ textAlign: 'right', flexShrink: 0 }}>
           <div style={{ fontSize: '1.1rem', fontWeight: 800, color: 'var(--text-primary)' }}>
-            {formatVND(sub.price)}
+            {formatCurrency(sub.price, sub.currency)}
           </div>
           <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-            {formatVND(sub.monthlyCost)}/tháng
+            {formatCurrency(sub.monthlyCost, sub.currency)}/tháng
           </div>
         </div>
       </div>
@@ -118,6 +118,7 @@ export default function SubscriptionCard({ subscription: sub, onAction, onDelete
           <div style={{ fontSize: '0.8rem', color: usage.color, fontWeight: 600 }}>
             <AlertTriangle size={13} style={{ display: 'inline', marginRight: 4 }} />
             Lãng phí ~{formatVND(sub.wasteCost)}/tháng
+            <span style={{ fontSize: '0.7rem', fontWeight: 400 }}> (đã quy đổi)</span>
           </div>
           <div style={{ fontSize: '0.75rem', color: usage.color }}>
             Gia hạn: {sub.daysUntilRenewal === 0 ? 'hôm nay' : `${sub.daysUntilRenewal} ngày nữa`}
