@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import { wasteApi, subscriptionApi } from '@/lib/services';
 import { formatVND, categoryLabel } from '@/lib/utils';
-import { Zap, AlertTriangle, Copy, RefreshCw, CheckCircle, TrendingDown, Lock, Star } from 'lucide-react';
+import { Zap, AlertTriangle, Copy, RefreshCw, CheckCircle, TrendingDown, Lock, Star, ArrowRight } from 'lucide-react';
 import type { ActionType, WasteItem } from '@/lib/types';
 import { useAuth } from '@/lib/context/AuthContext';
 import BrandLogo from '@/components/ui/BrandLogo';
@@ -228,27 +228,46 @@ export default function WastePage() {
             </>
           ) : (
             <div style={{
-              position: 'relative', marginTop: 12, padding: '40px 20px',
+              position: 'relative', marginTop: 12,
               border: '1px solid var(--border-light)', borderRadius: 'var(--radius-lg)',
-              background: 'linear-gradient(to bottom, rgba(255,255,255,0.8), rgba(255,255,255,0.4))',
-              display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-              textAlign: 'center', overflow: 'hidden'
+              overflow: 'hidden', minHeight: 280,
             }}>
-              {/* Blurred background faking content */}
-              <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, filter: 'blur(8px)', opacity: 0.4, pointerEvents: 'none', background: 'repeating-linear-gradient(0deg, var(--bg) 0px, var(--bg) 40px, var(--border-light) 40px, var(--border-light) 41px)', zIndex: 0 }} />
+              {/* Striped placeholder background behind blur */}
+              <div style={{ height: 280, background: 'repeating-linear-gradient(0deg, var(--bg) 0px, var(--bg) 40px, var(--border-light) 40px, var(--border-light) 41px)', opacity: 0.4, filter: 'blur(4px)' }} />
 
-              <div style={{ position: 'relative', zIndex: 1, maxWidth: 400 }}>
-                <div style={{ width: 64, height: 64, margin: '0 auto 16px', background: 'linear-gradient(135deg, #FFF7ED, #FEF3C7)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid #FCD34D' }}>
-                  <Lock size={28} color="#D97706" />
+              {/* Lock overlay — same pattern as Analytics & Goals */}
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.3 }}
+                style={{
+                  position: 'absolute', inset: 0,
+                  display: 'flex', flexDirection: 'column',
+                  alignItems: 'center', justifyContent: 'center',
+                  background: 'rgba(255,255,255,0.72)',
+                  backdropFilter: 'blur(4px)',
+                  textAlign: 'center', padding: 32,
+                }}
+              >
+                <div style={{
+                  width: 60, height: 60, borderRadius: '50%',
+                  background: 'linear-gradient(135deg, #FFF7ED, #FEF3C7)',
+                  border: '1.5px solid #FCD34D',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  flexShrink: 0,
+                  marginBottom: 16,
+                  boxShadow: '0 4px 20px #D9770622',
+                }}>
+                  <Lock size={26} color="#D97706" />
                 </div>
-                <h2 style={{ fontSize: '1.25rem', fontWeight: 800, marginBottom: 8, color: '#92400E' }}>Tính năng Premium</h2>
-                <p style={{ color: '#B45309', marginBottom: 24, fontSize: '0.9rem', lineHeight: 1.5 }}>
-                  Khám phá chi tiết danh sách ứng dụng gây lãng phí, nhận cảnh báo trùng lặp và đề xuất tự động để cắt giảm {formatVND(data.potentialSavings)}/tháng.
-                </p>
-                <Link href="/pricing" className="btn btn-outline" style={{ color: '#D97706', borderColor: '#D97706', background: 'white' }}>
-                  Xem chi tiết gói Premium
+                <div style={{ fontWeight: 800, fontSize: '1.1rem', marginBottom: 8, color: 'var(--text-primary)' }}>Tính năng Premium</div>
+                <div style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', maxWidth: 320, lineHeight: 1.6, marginBottom: 20 }}>
+                  Khám phá chi tiết danh sách lãng phí, cảnh báo dịch vụ trùng lặp và nhận đề xuất tự động để tối ưu chi tiêu hàng tháng.
+                </div>
+                <Link href="/pricing" className="btn btn-outline btn-sm" style={{ color: '#D97706', borderColor: '#D97706' }}>
+                  Xem gói Premium <ArrowRight size={13} style={{ marginLeft: 4 }} />
                 </Link>
-              </div>
+              </motion.div>
             </div>
           )}
         </div>
