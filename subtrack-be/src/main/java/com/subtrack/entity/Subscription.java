@@ -71,6 +71,9 @@ public class Subscription {
 
     private String notes;
 
+    @Column(name = "website_url")
+    private String websiteUrl;
+
     @Column(name = "is_cancelled", nullable = false)
     @Builder.Default
     private boolean cancelled = false;

@@ -81,6 +81,7 @@ public class SubscriptionService {
                 .iconUrl(request.getIconUrl() != null ? request.getIconUrl() : (preset != null ? preset.getIconUrl() : null))
                 .color(request.getColor() != null ? request.getColor() : (preset != null ? preset.getColor() : null))
                 .notes(request.getNotes())
+                .websiteUrl(request.getWebsiteUrl())
                 .cancelled(false)
                 .build();
 
@@ -115,6 +116,7 @@ public class SubscriptionService {
         if (request.getIconUrl() != null) sub.setIconUrl(request.getIconUrl());
         if (request.getColor() != null) sub.setColor(request.getColor());
         if (request.getNotes() != null) sub.setNotes(request.getNotes());
+        if (request.getWebsiteUrl() != null) sub.setWebsiteUrl(request.getWebsiteUrl());
 
         subscriptionRepository.save(sub);
 
@@ -206,11 +208,14 @@ public class SubscriptionService {
         boolean isDuplicate = wasteEngine.isPotentialDuplicate(sub, duplicateCategories);
         long daysUntil = ChronoUnit.DAYS.between(LocalDate.now(), sub.getNextBillingDate());
 
-        String websiteUrl = null;
+        // Ưu tiên websiteUrl trực tiếp trên subscription, sau đó mới đến preset
+        String websiteUrl = sub.getWebsiteUrl();
         UUID presetId = null;
         if (sub.getPreset() != null) {
-            websiteUrl = sub.getPreset().getWebsiteUrl();
             presetId = sub.getPreset().getId();
+            if (websiteUrl == null) {
+                websiteUrl = sub.getPreset().getWebsiteUrl();
+            }
         }
 
         return SubscriptionResponse.builder()

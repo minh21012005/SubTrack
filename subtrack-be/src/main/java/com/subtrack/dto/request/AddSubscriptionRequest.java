@@ -5,6 +5,7 @@ import com.subtrack.enums.UsageStatus;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 import lombok.Data;
 
 import java.math.BigDecimal;
@@ -40,4 +41,10 @@ public class AddSubscriptionRequest {
     private String iconUrl;
     private String color;
     private String notes;
+
+    @Pattern(
+        regexp = "^$|^https?://.*",
+        message = "Website URL phải bắt đầu bằng http:// hoặc https://"
+    )
+    private String websiteUrl;
 }

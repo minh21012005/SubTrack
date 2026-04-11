@@ -59,6 +59,7 @@ export interface AddSubscriptionRequest {
   iconUrl?: string;
   color?: string;
   notes?: string;
+  websiteUrl?: string;
 }
 
 // ─── Dashboard ───────────────────────────────────────────────────────────────

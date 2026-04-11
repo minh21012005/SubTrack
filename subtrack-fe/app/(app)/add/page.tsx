@@ -34,6 +34,7 @@ export default function AddSubscriptionPage() {
     category: '',
     usageStatus: 'ACTIVE' as UsageStatus,
     notes: '',
+    websiteUrl: '',
   });
 
   const [error, setError] = useState('');
@@ -57,6 +58,7 @@ export default function AddSubscriptionPage() {
         iconUrl: selectedPreset?.iconUrl,
         color: selectedPreset?.color,
         notes: form.notes,
+        websiteUrl: form.websiteUrl.trim() || undefined,
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['subscriptions'] });
@@ -102,13 +104,28 @@ export default function AddSubscriptionPage() {
 
   const currentNextBillingDate = form.nextBillingDate || defaultDate();
 
+  const isValidUrl = (url: string): boolean => {
+    if (!url) return true; // optional field
+    try {
+      const parsed = new URL(url);
+      return parsed.protocol === 'http:' || parsed.protocol === 'https:';
+    } catch {
+      return false;
+    }
+  };
+
+  const urlError = form.websiteUrl && !isValidUrl(form.websiteUrl)
+    ? 'Vui lòng nhập đường dẫn hợp lệ (bắt đầu bằng http:// hoặc https://)'
+    : '';
+
   const canSubmit =
     form.name.trim() &&
     form.price &&
     Number(form.price) > 0 &&
     form.billingCycle &&
     currentNextBillingDate &&
-    form.category;
+    form.category &&
+    !urlError;
 
   const STEPS = [
     { n: 1, label: 'Chọn service' },
@@ -311,6 +328,30 @@ export default function AddSubscriptionPage() {
                   <input className="form-input" placeholder="Ví dụ: Share với gia đình" value={form.notes}
                     onChange={(e) => setForm((f) => ({ ...f, notes: e.target.value }))} />
                 </div>
+
+                {/* Website URL - only show for manual entries (no preset or preset won't provide URL) */}
+                {!selectedPreset && (
+                  <div className="form-group">
+                    <label className="form-label">Website (tuỳ chọn)</label>
+                    <input
+                      className="form-input"
+                      placeholder="https://example.com"
+                      type="url"
+                      value={form.websiteUrl}
+                      onChange={(e) => setForm((f) => ({ ...f, websiteUrl: e.target.value }))}
+                      style={urlError ? { borderColor: 'var(--accent-red)' } : {}}
+                    />
+                    {urlError ? (
+                      <span style={{ fontSize: '0.75rem', color: 'var(--accent-red)', marginTop: 4, display: 'flex', alignItems: 'center', gap: 4 }}>
+                        ⚠ {urlError}
+                      </span>
+                    ) : (
+                      <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: 4, display: 'block' }}>
+                        Đường dẫn đến trang quản trị hoặc trang chủ của dịch vụ.
+                      </span>
+                    )}
+                  </div>
+                )}
               </div>
 
               <div style={{ display: 'flex', gap: 10, marginTop: 24, justifyContent: 'space-between', borderTop: '1px solid var(--border-light)', paddingTop: 16 }}>
@@ -340,6 +381,7 @@ export default function AddSubscriptionPage() {
                   ['Danh mục', categoryLabel(form.category)],
                   isPremium ? ['Tình trạng', form.usageStatus === 'ACTIVE' ? 'Đang dùng' : form.usageStatus === 'RARELY' ? 'Hiếm dùng' : 'Không dùng'] : null,
                   ...(form.notes ? [['Ghi chú', form.notes]] : []),
+                  ...(!selectedPreset && form.websiteUrl ? [['Website', form.websiteUrl]] : []),
                 ].filter(Boolean).map(([key, val]) => (
                   <div key={key} style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid var(--border-light)' }}>
                     <span style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>{key}</span>
