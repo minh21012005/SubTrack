@@ -50,7 +50,44 @@ public class WasteEngine {
     }
 
     /**
-     * Find categories that have more than one active subscription (potential duplicates).
+     * Normalize a name for fuzzy comparison (lowercase, remove spaces and special characters).
+     */
+    private String normalizeName(String name) {
+        if (name == null) return "";
+        return name.toLowerCase()
+                .replaceAll("\\s+", "")
+                .replaceAll("[^a-zA-Z0-9]", "");
+    }
+
+    /**
+     * Find specific subscriptions that are potential duplicates based on Preset or Name.
+     */
+    public java.util.Set<java.util.UUID> findDuplicateSubscriptionIds(List<Subscription> subs) {
+        java.util.Set<java.util.UUID> duplicateIds = new java.util.HashSet<>();
+        List<Subscription> activeSubs = subs.stream().filter(s -> !s.isCancelled()).collect(Collectors.toList());
+
+        // 1. Check by Preset ID (definite duplicate if same user has same preset twice)
+        Map<java.util.UUID, List<Subscription>> byPreset = activeSubs.stream()
+                .filter(s -> s.getPreset() != null)
+                .collect(Collectors.groupingBy(s -> s.getPreset().getId()));
+        
+        byPreset.values().stream()
+                .filter(list -> list.size() > 1)
+                .forEach(list -> list.forEach(s -> duplicateIds.add(s.getId())));
+
+        // 2. Check by Normalized Name
+        Map<String, List<Subscription>> byName = activeSubs.stream()
+                .collect(Collectors.groupingBy(s -> normalizeName(s.getName())));
+        
+        byName.values().stream()
+                .filter(list -> list.size() > 1)
+                .forEach(list -> list.forEach(s -> duplicateIds.add(s.getId())));
+
+        return duplicateIds;
+    }
+
+    /**
+     * Find categories that have more than one active subscription.
      */
     public List<String> findDuplicateCategories(List<Subscription> subs) {
         return subs.stream()
@@ -63,10 +100,11 @@ public class WasteEngine {
     }
 
     /**
-     * Check if a subscription belongs to a duplicate category.
+     * Check if a subscription is a potential duplicate based on ID set or Category list.
      */
-    public boolean isPotentialDuplicate(Subscription sub, List<String> duplicateCategories) {
-        return !sub.isCancelled() && duplicateCategories.contains(sub.getCategory());
+    public boolean isPotentialDuplicate(Subscription sub, java.util.Set<java.util.UUID> duplicateIds, List<String> duplicateCategories) {
+        if (sub.isCancelled()) return false;
+        return duplicateIds.contains(sub.getId()) || duplicateCategories.contains(sub.getCategory());
     }
 
     /**

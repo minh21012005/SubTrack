@@ -40,6 +40,9 @@ public class DashboardService {
 
         List<Subscription> allSubs = subscriptionRepository.findByUserIdOrderByNextBillingDateAsc(user.getId());
         List<Subscription> activeSubs = allSubs.stream().filter(s -> !s.isCancelled()).collect(Collectors.toList());
+        
+        // Advanced Duplicate Detection
+        java.util.Set<java.util.UUID> duplicateIds = wasteEngine.findDuplicateSubscriptionIds(activeSubs);
         List<String> duplicateCategories = wasteEngine.findDuplicateCategories(activeSubs);
 
         // Costs — all normalized to VND for aggregation across mixed currencies
@@ -68,7 +71,7 @@ public class DashboardService {
         // Waste subscriptions
         List<SubscriptionResponse> wasteSubs = activeSubs.stream()
                 .filter(s -> s.getUsageStatus() != UsageStatus.ACTIVE)
-                .map(s -> toSubResponse(s, duplicateCategories))
+                .map(s -> toSubResponse(s, duplicateIds, duplicateCategories))
                 .collect(Collectors.toList());
 
         // Health Score
@@ -76,13 +79,16 @@ public class DashboardService {
         int wasteDeduction = (int) Math.min(35, wastePercent * 0.35);
         int unusedDeduction = (int) Math.min(25, activeSubs.stream().filter(s -> s.getUsageStatus() == UsageStatus.UNUSED).count() * 10);
         int rarelyDeduction = (int) Math.min(15, activeSubs.stream().filter(s -> s.getUsageStatus() == UsageStatus.RARELY).count() * 5);
-        int dupDeduction = Math.min(20, duplicateCategories.size() * 7);
+        
+        // Improved Dup Deduction: 10 points per actual duplicate sub, up to 20
+        int dupDeduction = Math.min(20, duplicateIds.size() * 10);
+        
         int healthScore = Math.max(0, 100 - wasteDeduction - unusedDeduction - rarelyDeduction - dupDeduction);
-        healthBreakdown.put("L\u00e3ng ph\u00ed chi ti\u00eau", wasteDeduction);
-        healthBreakdown.put("Kh\u00f4ng s\u1eed d\u1ee5ng", unusedDeduction);
-        healthBreakdown.put("Hi\u1ebfm d\u00f9ng", rarelyDeduction);
-        healthBreakdown.put("Tr\u00f9ng l\u1eb7p", dupDeduction);
-        String healthLabel = healthScore >= 90 ? "Tuy\u1ec7t v\u1eddi" : healthScore >= 70 ? "\u1ed4n" : "B\u00e1o đ\u1ed9ng";
+        healthBreakdown.put("Lãng phí chi tiêu", wasteDeduction);
+        healthBreakdown.put("Không sử dụng", unusedDeduction);
+        healthBreakdown.put("Hiếm dùng", rarelyDeduction);
+        healthBreakdown.put("Trùng lặp", dupDeduction);
+        String healthLabel = healthScore >= 90 ? "Tuyệt vời" : healthScore >= 70 ? "Ổn" : "Báo động";
 
         return DashboardResponse.builder()
                 .totalMonthlyCost(totalMonthly)
@@ -126,8 +132,8 @@ public class DashboardService {
                 .collect(Collectors.toList());
     }
 
-    private SubscriptionResponse toSubResponse(Subscription s, List<String> duplicates) {
-        boolean isDup = wasteEngine.isPotentialDuplicate(s, duplicates);
+    private SubscriptionResponse toSubResponse(Subscription s, java.util.Set<java.util.UUID> duplicateIds, List<String> duplicates) {
+        boolean isDup = wasteEngine.isPotentialDuplicate(s, duplicateIds, duplicates);
         long days = ChronoUnit.DAYS.between(LocalDate.now(), s.getNextBillingDate());
         return SubscriptionResponse.builder()
                 .id(s.getId())

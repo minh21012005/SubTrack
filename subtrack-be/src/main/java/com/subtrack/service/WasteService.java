@@ -30,6 +30,7 @@ public class WasteService {
         List<Subscription> activeSubs = subscriptionRepository
                 .findByUserIdAndCancelledFalseOrderByNextBillingDateAsc(user.getId());
 
+        java.util.Set<java.util.UUID> duplicateIds = wasteEngine.findDuplicateSubscriptionIds(activeSubs);
         List<String> duplicateCategories = wasteEngine.findDuplicateCategories(activeSubs);
 
         // All totals normalized to VND for cross-currency comparison
@@ -46,8 +47,8 @@ public class WasteService {
                         .multiply(BigDecimal.valueOf(100)).doubleValue()
                 : 0.0;
 
-        List<WasteItemResponse> unusedItems = buildWasteItems(activeSubs, UsageStatus.UNUSED, duplicateCategories);
-        List<WasteItemResponse> rarelyItems = buildWasteItems(activeSubs, UsageStatus.RARELY, duplicateCategories);
+        List<WasteItemResponse> unusedItems = buildWasteItems(activeSubs, UsageStatus.UNUSED, duplicateIds, duplicateCategories);
+        List<WasteItemResponse> rarelyItems = buildWasteItems(activeSubs, UsageStatus.RARELY, duplicateIds, duplicateCategories);
 
         List<DuplicateCategoryResponse> dupSummary = wasteEngine.buildDuplicateSummary(activeSubs);
         List<SavingSuggestionResponse> suggestions = wasteEngine.buildSuggestions(activeSubs);
@@ -65,6 +66,7 @@ public class WasteService {
     }
 
     private List<WasteItemResponse> buildWasteItems(List<Subscription> subs, UsageStatus status,
+                                                     java.util.Set<java.util.UUID> duplicateIds,
                                                      List<String> duplicates) {
         return subs.stream()
                 .filter(s -> s.getUsageStatus() == status)
@@ -72,7 +74,7 @@ public class WasteService {
                     // Per-item costs in VND for consistent display on waste page
                     BigDecimal monthlyVnd = wasteEngine.toMonthlyVnd(s);
                     BigDecimal wasteVnd = wasteEngine.calculateWasteVnd(s);
-                    boolean isDup = wasteEngine.isPotentialDuplicate(s, duplicates);
+                    boolean isDup = wasteEngine.isPotentialDuplicate(s, duplicateIds, duplicates);
                     return WasteItemResponse.builder()
                             .subscriptionId(s.getId())
                             .name(s.getName())

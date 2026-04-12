@@ -42,9 +42,10 @@ public class SubscriptionService {
     public List<SubscriptionResponse> getUserSubscriptions(String email) {
         User user = getUser(email);
         List<Subscription> subs = subscriptionRepository.findByUserIdOrderByNextBillingDateAsc(user.getId());
+        java.util.Set<java.util.UUID> duplicateIds = wasteEngine.findDuplicateSubscriptionIds(subs);
         List<String> duplicateCategories = wasteEngine.findDuplicateCategories(subs);
         return subs.stream()
-                .map(s -> toResponse(s, duplicateCategories))
+                .map(s -> toResponse(s, duplicateIds, duplicateCategories))
                 .collect(Collectors.toList());
     }
 
@@ -96,10 +97,10 @@ public class SubscriptionService {
                 .build();
         reminderRepository.save(reminder);
 
-        List<String> duplicates = wasteEngine.findDuplicateCategories(
-                subscriptionRepository.findByUserIdAndCancelledFalseOrderByNextBillingDateAsc(user.getId())
-        );
-        return toResponse(sub, duplicates);
+        List<Subscription> userSubs = subscriptionRepository.findByUserIdAndCancelledFalseOrderByNextBillingDateAsc(user.getId());
+        java.util.Set<java.util.UUID> duplicateIds = wasteEngine.findDuplicateSubscriptionIds(userSubs);
+        List<String> duplicates = wasteEngine.findDuplicateCategories(userSubs);
+        return toResponse(sub, duplicateIds, duplicates);
     }
 
     @Transactional
@@ -121,10 +122,10 @@ public class SubscriptionService {
 
         subscriptionRepository.save(sub);
 
-        List<String> duplicates = wasteEngine.findDuplicateCategories(
-                subscriptionRepository.findByUserIdAndCancelledFalseOrderByNextBillingDateAsc(user.getId())
-        );
-        return toResponse(sub, duplicates);
+        List<Subscription> userSubs = subscriptionRepository.findByUserIdAndCancelledFalseOrderByNextBillingDateAsc(user.getId());
+        java.util.Set<java.util.UUID> duplicateIds = wasteEngine.findDuplicateSubscriptionIds(userSubs);
+        List<String> duplicates = wasteEngine.findDuplicateCategories(userSubs);
+        return toResponse(sub, duplicateIds, duplicates);
     }
 
     @Transactional
@@ -187,19 +188,19 @@ public class SubscriptionService {
                 .note(request.getNote())
                 .build());
 
-        List<String> duplicates = wasteEngine.findDuplicateCategories(
-                subscriptionRepository.findByUserIdAndCancelledFalseOrderByNextBillingDateAsc(user.getId())
-        );
-        return toResponse(sub, duplicates);
+        List<Subscription> userSubs = subscriptionRepository.findByUserIdAndCancelledFalseOrderByNextBillingDateAsc(user.getId());
+        java.util.Set<java.util.UUID> duplicateIds = wasteEngine.findDuplicateSubscriptionIds(userSubs);
+        List<String> duplicates = wasteEngine.findDuplicateCategories(userSubs);
+        return toResponse(sub, duplicateIds, duplicates);
     }
 
     public SubscriptionResponse getSubscription(String email, UUID subId) {
         User user = getUser(email);
         Subscription sub = getSubscriptionForUser(subId, user.getId());
-        List<String> duplicates = wasteEngine.findDuplicateCategories(
-                subscriptionRepository.findByUserIdAndCancelledFalseOrderByNextBillingDateAsc(user.getId())
-        );
-        return toResponse(sub, duplicates);
+        List<Subscription> userSubs = subscriptionRepository.findByUserIdAndCancelledFalseOrderByNextBillingDateAsc(user.getId());
+        java.util.Set<java.util.UUID> duplicateIds = wasteEngine.findDuplicateSubscriptionIds(userSubs);
+        List<String> duplicates = wasteEngine.findDuplicateCategories(userSubs);
+        return toResponse(sub, duplicateIds, duplicates);
     }
 
     // ─── Helpers ─────────────────────────────────────────────────────────────
@@ -218,8 +219,8 @@ public class SubscriptionService {
         return sub;
     }
 
-    private SubscriptionResponse toResponse(Subscription sub, List<String> duplicateCategories) {
-        boolean isDuplicate = wasteEngine.isPotentialDuplicate(sub, duplicateCategories);
+    private SubscriptionResponse toResponse(Subscription sub, java.util.Set<java.util.UUID> duplicateIds, List<String> duplicateCategories) {
+        boolean isDuplicate = wasteEngine.isPotentialDuplicate(sub, duplicateIds, duplicateCategories);
         long daysUntil = ChronoUnit.DAYS.between(LocalDate.now(), sub.getNextBillingDate());
 
         // Ưu tiên websiteUrl trực tiếp trên subscription, sau đó mới đến preset

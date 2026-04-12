@@ -82,17 +82,21 @@ public class NotificationService {
            (subscription.getUsageStatus() == com.subtrack.enums.UsageStatus.UNUSED || 
             subscription.getUsageStatus() == com.subtrack.enums.UsageStatus.RARELY)) {
             
+            String usageText = subscription.getUsageStatus() == com.subtrack.enums.UsageStatus.UNUSED ? "KHÔNG SỬ DỤNG" : "HIẾM KHI DÙNG";
             message = String.format(
-                    "⚠️ [CẢNH BÁO LÃNG PHÍ] %s chuẩn bị gia hạn %s. Đáng lưu ý là bạn ÍT hoặc KHÔNG sử dụng nó gần đây. Hủy ngay để tránh mất tiền oan?",
+                    "⚠️ [THÔNG BÁO THÔNG MINH] Dịch vụ \"%s\" của bạn sắp gia hạn (%s %s). " +
+                    "Hệ thống nhận thấy bạn đang để trạng thái %s. Bạn có muốn hủy ngay để tiết kiệm không?",
                     subscription.getName(),
-                    subscription.getPrice().toPlainString()
+                    subscription.getPrice().toPlainString(),
+                    subscription.getCurrency(),
+                    usageText
             );
             type = NotificationType.WASTE_ALERT;
             
         } else {
             // Standard Alert
             message = String.format(
-                    "⏰ Subscription \"%s\" sẽ gia hạn vào ngày %s (%s %s)",
+                    "⏰ Nhắc nhở: Subscription \"%s\" sẽ tự động gia hạn vào ngày %s (%s %s). Hãy kiểm tra lại số dư tài khoản của bạn.",
                     subscription.getName(),
                     subscription.getNextBillingDate(),
                     subscription.getPrice().toPlainString(),
