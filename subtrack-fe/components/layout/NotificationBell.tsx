@@ -8,11 +8,11 @@ import { useRouter } from 'next/navigation';
 import type { Notification } from '@/lib/types';
 
 const TYPE_CONFIG: Record<string, { icon: React.ReactNode; color: string; bg: string }> = {
-  RENEWAL_REMINDER: { icon: <Clock size={14} />, color: '#D97706', bg: '#FEF3C7' },
-  WASTE_ALERT:      { icon: <AlertTriangle size={14} />, color: 'var(--accent-red)', bg: '#FEF2F2' },
-  PAYMENT_APPROVED: { icon: <CheckCircle2 size={14} />, color: 'var(--accent-green)', bg: '#ECFDF5' },
-  PAYMENT_REJECTED: { icon: <X size={14} />, color: 'var(--accent-red)', bg: '#FEF2F2' },
-  GENERAL:          { icon: <Star size={14} />, color: 'var(--primary)', bg: 'var(--primary-light)' },
+  RENEWAL_REMINDER: { icon: <Clock size={14} />, color: '#F59E0B', bg: '#FFFBEB' },
+  WASTE_ALERT:      { icon: <AlertTriangle size={14} />, color: '#EF4444', bg: '#FEF2F2' },
+  PAYMENT_APPROVED: { icon: <CheckCircle2 size={14} />, color: '#10B981', bg: '#ECFDF5' },
+  PAYMENT_REJECTED: { icon: <X size={14} />, color: '#EF4444', bg: '#FEF2F2' },
+  GENERAL:          { icon: <Star size={14} />, color: '#6366F1', bg: '#EEF2FF' },
 };
 
 export default function NotificationBell() {
@@ -109,20 +109,36 @@ export default function NotificationBell() {
 
       {open && (
         <div style={{
-          position: 'absolute', right: 0, top: '110%', zIndex: 9999,
-          width: 340,
+          position: 'absolute', right: 0, top: 'calc(100% + 12px)', zIndex: 9999,
+          width: 380,
           background: '#ffffff',
-          border: '1px solid #E2E8F0',
-          borderRadius: 'var(--radius-xl)',
-          boxShadow: '0 12px 40px rgba(0,0,0,0.18), 0 2px 8px rgba(0,0,0,0.08)',
+          border: '1px solid #E5E7EB',
+          borderRadius: '20px',
+          boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
           overflow: 'hidden',
+          animation: 'scaleIn 0.2s ease-out',
         }}>
           {/* Header */}
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 16px', borderBottom: '1px solid var(--border-light)' }}>
-            <span style={{ fontWeight: 700, fontSize: '0.95rem' }}>Thông báo</span>
+          <div style={{ 
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between', 
+            padding: '20px 24px', 
+            borderBottom: '1px solid #F3F4F6',
+            background: '#FAFAFA'
+          }}>
+            <span style={{ fontWeight: 800, fontSize: '1.05rem', color: '#111827', letterSpacing: '-0.01em' }}>Thông báo</span>
             <div style={{ display: 'flex', gap: 8 }}>
               {unreadCount > 0 && (
-                <button onClick={() => markAllRead()} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '0.75rem', color: 'var(--primary)', fontWeight: 600 }}>
+                <button 
+                  onClick={() => markAllRead()} 
+                  style={{ 
+                    background: 'none', border: 'none', cursor: 'pointer', 
+                    fontSize: '0.78rem', color: '#6366F1', fontWeight: 700,
+                    padding: '4px 8px', borderRadius: '6px',
+                    transition: 'background 0.2s'
+                  }}
+                  onMouseEnter={e => e.currentTarget.style.background = '#EEF2FF'}
+                  onMouseLeave={e => e.currentTarget.style.background = 'none'}
+                >
                   Đánh dấu đã đọc
                 </button>
               )}
@@ -130,11 +146,11 @@ export default function NotificationBell() {
           </div>
 
           {/* List */}
-          <div style={{ maxHeight: 360, overflowY: 'auto' }}>
+          <div style={{ maxHeight: 420, overflowY: 'auto' }}>
             {!notifications || notifications.length === 0 ? (
-              <div style={{ padding: '32px 16px', textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.875rem' }}>
-                <Bell size={28} style={{ opacity: 0.2, margin: '0 auto 8px', display: 'block' }} />
-                Chưa có thông báo nào
+              <div style={{ padding: '48px 24px', textAlign: 'center', color: '#9CA3AF', fontSize: '0.9rem' }}>
+                <Bell size={40} style={{ opacity: 0.1, margin: '0 auto 16px', display: 'block' }} />
+                Chưa có thông báo nào mới
               </div>
             ) : (
               notifications.map((n) => {
@@ -144,25 +160,35 @@ export default function NotificationBell() {
                   <div
                     key={n.id}
                     style={{
-                      display: 'flex', gap: 12, padding: '12px 16px',
-                      borderBottom: '1px solid var(--border-light)',
-                      background: isUnread ? 'var(--primary-light)' : 'transparent',
-                      cursor: 'default', transition: 'background 0.15s',
+                      display: 'flex', gap: 16, padding: '16px 24px',
+                      borderBottom: '1px solid #F3F4F6',
+                      background: isUnread ? '#F5F7FF' : 'transparent',
+                      cursor: 'default', transition: 'background 0.2s',
                     }}
                   >
-                    <div style={{ width: 32, height: 32, borderRadius: '50%', background: cfg.bg, color: cfg.color, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                    <div style={{ 
+                      width: 40, height: 40, borderRadius: '12px', 
+                      background: cfg.bg, color: cfg.color, 
+                      display: 'flex', alignItems: 'center', justifyContent: 'center', 
+                      flexShrink: 0,
+                      boxShadow: `0 2px 4px ${cfg.color}11`
+                    }}>
                       {cfg.icon}
                     </div>
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontSize: '0.83rem', color: 'var(--text-primary)', lineHeight: 1.45, fontWeight: isUnread ? 600 : 400 }}>
+                      <div style={{ 
+                        fontSize: '0.875rem', color: '#374151', 
+                        lineHeight: 1.5, fontWeight: isUnread ? 700 : 400,
+                        letterSpacing: '-0.01em'
+                      }}>
                         {n.message}
                       </div>
-                      <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: 4 }}>
-                        {timeAgo(n.createdAt)}
+                      <div style={{ fontSize: '0.75rem', color: '#9CA3AF', marginTop: 6, display: 'flex', alignItems: 'center', gap: 4 }}>
+                        <Clock size={10} /> {timeAgo(n.createdAt)}
                       </div>
                     </div>
                     {isUnread && (
-                      <div style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--primary)', flexShrink: 0, marginTop: 4 }} />
+                      <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#6366F1', flexShrink: 0, marginTop: 6, boxShadow: '0 0 0 4px #6366F122' }} />
                     )}
                   </div>
                 );

@@ -340,7 +340,7 @@ export default function PricingPage() {
       )}
 
       {/* PENDING state */}
-      {(pendingRequest || submittedPeriod) && user?.planType === 'FREE' && (
+      {pendingRequest && user?.planType === 'FREE' && (
         <motion.div initial={{ opacity: 0, scale: 0.97 }} animate={{ opacity: 1, scale: 1 }}
           className="card" style={{ maxWidth: 560, margin: '0 auto', textAlign: 'center', border: '1.5px solid #FCD34D', background: '#FFFBEB' }}>
           <div style={{ width: 64, height: 64, background: '#FEF3C7', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
@@ -367,7 +367,7 @@ export default function PricingPage() {
       )}
 
       {/* Plan cards — always shown for FREE users without pending */}
-      {user?.planType === 'FREE' && !pendingRequest && !submittedPeriod && (
+      {user?.planType === 'FREE' && !pendingRequest && (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 24, maxWidth: 760, margin: '0 auto' }}>
           {PLANS.map(plan => (
             <PlanCard
