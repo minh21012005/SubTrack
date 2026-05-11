@@ -1,6 +1,7 @@
 package com.subtrack.controller;
 
 import com.subtrack.dto.response.ApiResponse;
+import com.subtrack.dto.response.PageResponse;
 import com.subtrack.dto.response.PaymentRequestDTO;
 import com.subtrack.enums.BillingPeriod;
 import com.subtrack.service.PaymentService;
@@ -11,7 +12,6 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.OffsetDateTime;
-import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -35,13 +35,20 @@ public class PaymentController {
                 .build());
     }
 
+    /**
+     * Billing history for upgrades; {@code months} bounds how far back we fetch (default 12 months).
+     */
     @GetMapping("/my-requests")
-    public ResponseEntity<ApiResponse<List<PaymentRequestDTO>>> getMyRequests(
-            @AuthenticationPrincipal UserDetails userDetails) {
-        List<PaymentRequestDTO> list = paymentService.getMyRequests(userDetails.getUsername());
-        return ResponseEntity.ok(ApiResponse.<List<PaymentRequestDTO>>builder()
+    public ResponseEntity<ApiResponse<PageResponse<PaymentRequestDTO>>> getMyRequests(
+            @AuthenticationPrincipal UserDetails userDetails,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "12") int months) {
+        PageResponse<PaymentRequestDTO> data = paymentService.getMyRequestsPage(
+                userDetails.getUsername(), page, size, months);
+        return ResponseEntity.ok(ApiResponse.<PageResponse<PaymentRequestDTO>>builder()
                 .success(true)
-                .data(list)
+                .data(data)
                 .timestamp(OffsetDateTime.now())
                 .build());
     }

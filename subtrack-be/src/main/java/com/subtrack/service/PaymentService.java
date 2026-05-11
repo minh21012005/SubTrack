@@ -1,5 +1,6 @@
 package com.subtrack.service;
 
+import com.subtrack.dto.response.PageResponse;
 import com.subtrack.dto.response.PaymentRequestDTO;
 import com.subtrack.entity.PaymentRequest;
 import com.subtrack.entity.User;
@@ -10,15 +11,18 @@ import com.subtrack.exception.BadRequestException;
 import com.subtrack.repository.PaymentRequestRepository;
 import com.subtrack.repository.RenewalReminderRepository;
 import com.subtrack.repository.UserRepository;
+import com.subtrack.util.PaginationUtil;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -70,18 +74,41 @@ public class PaymentService {
         return toDTO(request);
     }
 
+    /**
+     * Billing history for the current user: only recent rows to avoid huge payloads (see {@code months}).
+     */
     @Transactional(readOnly = true)
-    public List<PaymentRequestDTO> getMyRequests(String email) {
+    public PageResponse<PaymentRequestDTO> getMyRequestsPage(String email, int page, int size, int months) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new BadRequestException("Tài khoản không tồn tại"));
-        return paymentRequestRepository.findByUserIdOrderByCreatedAtDesc(user.getId())
-                .stream().map(this::toDTO).collect(Collectors.toList());
+        OffsetDateTime since = OffsetDateTime.now().minus(months, ChronoUnit.MONTHS);
+        Page<PaymentRequest> p = paymentRequestRepository.findByUserIdSince(
+                user.getId(),
+                since,
+                PaginationUtil.page(page, size, Sort.by(Sort.Direction.DESC, "createdAt")));
+        return PageResponse.from(p, this::toDTO);
     }
 
     @Transactional(readOnly = true)
-    public List<PaymentRequestDTO> getAllRequests() {
-        return paymentRequestRepository.findAllByOrderByCreatedAtDesc()
-                .stream().map(this::toDTO).collect(Collectors.toList());
+    public PageResponse<PaymentRequestDTO> getPendingRequestsPage(int page, int size) {
+        Page<PaymentRequest> p = paymentRequestRepository.findByStatusOrderByCreatedAtDesc(
+                PaymentRequestStatus.PENDING,
+                PaginationUtil.page(page, size, Sort.by(Sort.Direction.DESC, "createdAt")));
+        return PageResponse.from(p, this::toDTO);
+    }
+
+    /**
+     * Admin: processed payment records (approved/rejected), limited to {@code months} back.
+     */
+    @Transactional(readOnly = true)
+    public PageResponse<PaymentRequestDTO> getProcessedHistoryPage(int page, int size, int months) {
+        OffsetDateTime since = OffsetDateTime.now().minus(months, ChronoUnit.MONTHS);
+        List<PaymentRequestStatus> statuses = List.of(PaymentRequestStatus.APPROVED, PaymentRequestStatus.REJECTED);
+        Page<PaymentRequest> p = paymentRequestRepository.findProcessedSince(
+                statuses,
+                since,
+                PaginationUtil.page(page, size, Sort.by(Sort.Direction.DESC, "createdAt")));
+        return PageResponse.from(p, this::toDTO);
     }
 
     @Transactional

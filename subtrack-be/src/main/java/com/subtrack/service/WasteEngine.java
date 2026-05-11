@@ -1,5 +1,6 @@
 package com.subtrack.service;
 
+import com.subtrack.dto.internal.SubscriptionDuplicateProbe;
 import com.subtrack.entity.Subscription;
 import com.subtrack.enums.BillingCycle;
 import com.subtrack.enums.UsageStatus;
@@ -84,6 +85,41 @@ public class WasteEngine {
                 .forEach(list -> list.forEach(s -> duplicateIds.add(s.getId())));
 
         return duplicateIds;
+    }
+
+    /**
+     * Same duplicate logic as {@link #findDuplicateSubscriptionIds(List)} using lightweight probes (no full entity graph).
+     */
+    public java.util.Set<java.util.UUID> findDuplicateSubscriptionIdsFromProbes(List<SubscriptionDuplicateProbe> probes) {
+        java.util.Set<java.util.UUID> duplicateIds = new java.util.HashSet<>();
+        List<SubscriptionDuplicateProbe> active = probes.stream().filter(p -> !p.cancelled()).toList();
+
+        Map<java.util.UUID, List<SubscriptionDuplicateProbe>> byPreset = active.stream()
+                .filter(p -> p.presetId() != null)
+                .collect(Collectors.groupingBy(SubscriptionDuplicateProbe::presetId));
+
+        byPreset.values().stream()
+                .filter(list -> list.size() > 1)
+                .forEach(list -> list.forEach(p -> duplicateIds.add(p.id())));
+
+        Map<String, List<SubscriptionDuplicateProbe>> byName = active.stream()
+                .collect(Collectors.groupingBy(p -> normalizeName(p.name())));
+
+        byName.values().stream()
+                .filter(list -> list.size() > 1)
+                .forEach(list -> list.forEach(p -> duplicateIds.add(p.id())));
+
+        return duplicateIds;
+    }
+
+    public List<String> findDuplicateCategoriesFromProbes(List<SubscriptionDuplicateProbe> probes) {
+        return probes.stream()
+                .filter(p -> !p.cancelled())
+                .collect(Collectors.groupingBy(SubscriptionDuplicateProbe::category, Collectors.counting()))
+                .entrySet().stream()
+                .filter(e -> e.getValue() > 1)
+                .map(Map.Entry::getKey)
+                .collect(Collectors.toList());
     }
 
     /**

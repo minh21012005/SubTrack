@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
@@ -8,14 +9,21 @@ import { paymentApi } from '@/lib/services';
 import { formatVND } from '@/lib/utils';
 import { useAuth } from '@/lib/context/AuthContext';
 import type { PaymentRequest } from '@/lib/types';
+import Pagination from '@/components/ui/Pagination';
+
+const PAGE_SIZE = 10;
+const HISTORY_MONTHS = 12;
 
 export default function BillingPage() {
   const { user } = useAuth();
+  const [page, setPage] = useState(0);
 
-  const { data: payments, isLoading } = useQuery({
-    queryKey: ['my-payments'],
-    queryFn: () => paymentApi.getMyRequests().then((r) => r.data.data),
+  const { data: paymentsPage, isLoading } = useQuery({
+    queryKey: ['my-payments', page],
+    queryFn: () => paymentApi.getMyRequests(page, PAGE_SIZE, HISTORY_MONTHS).then((r) => r.data.data),
   });
+
+  const payments = paymentsPage?.content ?? [];
 
   const statusBadge = (status: PaymentRequest['status']) => {
     const map = {
@@ -102,9 +110,12 @@ export default function BillingPage() {
 
         {/* History Table */}
         <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
-          <div style={{ padding: '20px 24px', borderBottom: '1px solid var(--border-light)', display: 'flex', alignItems: 'center', gap: 8 }}>
+          <div style={{ padding: '20px 24px', borderBottom: '1px solid var(--border-light)', display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
             <Clock size={18} color="var(--text-secondary)" />
             <h2 style={{ fontSize: '1rem', fontWeight: 700 }}>Danh sách giao dịch</h2>
+            <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginLeft: 'auto' }}>
+              Chỉ tải lịch sử trong vòng {HISTORY_MONTHS} tháng gần nhất (1 năm)
+            </span>
           </div>
 
           {isLoading ? (
@@ -112,7 +123,7 @@ export default function BillingPage() {
               <div className="spinner" style={{ margin: '0 auto 12px' }} />
               <div style={{ color: 'var(--text-muted)' }}>Đang tải lịch sử...</div>
             </div>
-          ) : !payments?.length ? (
+          ) : !payments.length ? (
             <div style={{ padding: 64, textAlign: 'center', color: 'var(--text-muted)' }}>
               <ReceiptText size={48} style={{ margin: '0 auto 16px', opacity: 0.2 }} />
               <p>Bạn chưa thực hiện giao dịch nào.</p>
@@ -166,6 +177,9 @@ export default function BillingPage() {
                 ))}
               </tbody>
             </table>
+          )}
+          {paymentsPage && paymentsPage.totalPages > 1 && (
+            <Pagination page={page} totalPages={paymentsPage.totalPages} onPageChange={setPage} />
           )}
         </div>
       </div>

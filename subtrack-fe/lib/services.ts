@@ -2,8 +2,8 @@ import apiClient from './api';
 import type {
   ApiResponse, AuthResponse, Dashboard, Subscription,
   AddSubscriptionRequest, WasteAnalysis, Preset,
-  Notification, ActionType, User, AdminUser, PaymentRequest,
-  SpendingTrend, SavingGoal, SavingGoalRequest,
+  Notification, ActionType, User, AdminUser, AdminSummary, PaymentRequest,
+  SpendingTrend, SavingGoal, SavingGoalRequest, PageResponse,
 } from './types';
 
 // ─── Auth ────────────────────────────────────────────────────────────────────
@@ -44,8 +44,15 @@ export const dashboardApi = {
 
 // ─── Subscriptions ───────────────────────────────────────────────────────────
 export const subscriptionApi = {
-  getAll: () =>
-    apiClient.get<ApiResponse<Subscription[]>>('/api/subscriptions'),
+  getPage: (page: number, size: number, filter: string, search?: string) =>
+    apiClient.get<ApiResponse<PageResponse<Subscription>>>('/api/subscriptions', {
+      params: {
+        page,
+        size,
+        filter,
+        ...(search?.trim() ? { search: search.trim() } : {}),
+      },
+    }),
 
   getOne: (id: string) =>
     apiClient.get<ApiResponse<Subscription>>(`/api/subscriptions/${id}`),
@@ -80,8 +87,10 @@ export const presetApi = {
 
 // ─── Notifications ────────────────────────────────────────────────────────────
 export const notificationApi = {
-  getAll: () =>
-    apiClient.get<ApiResponse<Notification[]>>('/api/notifications'),
+  getPage: (page: number, size: number, months?: number) =>
+    apiClient.get<ApiResponse<PageResponse<Notification>>>('/api/notifications', {
+      params: { page, size, months: months ?? 12 },
+    }),
 
   getUnreadCount: () =>
     apiClient.get<ApiResponse<{ count: number }>>('/api/notifications/unread-count'),
@@ -98,11 +107,27 @@ export const notificationApi = {
 
 // ─── Admin ────────────────────────────────────────────────────────────────────
 export const adminApi = {
-  getAllUsers: () =>
-    apiClient.get<ApiResponse<AdminUser[]>>('/api/admin/users'),
+  getSummary: () =>
+    apiClient.get<ApiResponse<AdminSummary>>('/api/admin/summary'),
 
-  getPayments: () =>
-    apiClient.get<ApiResponse<PaymentRequest[]>>('/api/admin/payments'),
+  getUsers: (page: number, size: number, search?: string) =>
+    apiClient.get<ApiResponse<PageResponse<AdminUser>>>('/api/admin/users', {
+      params: {
+        page,
+        size,
+        ...(search?.trim() ? { search: search.trim() } : {}),
+      },
+    }),
+
+  getPendingPayments: (page: number, size: number) =>
+    apiClient.get<ApiResponse<PageResponse<PaymentRequest>>>('/api/admin/payments/pending', {
+      params: { page, size },
+    }),
+
+  getPaymentHistory: (page: number, size: number, months?: number) =>
+    apiClient.get<ApiResponse<PageResponse<PaymentRequest>>>('/api/admin/payments/history', {
+      params: { page, size, months: months ?? 12 },
+    }),
 
   approvePayment: (id: string) =>
     apiClient.put<ApiResponse<PaymentRequest>>(`/api/admin/payments/${id}/approve`),
@@ -116,8 +141,10 @@ export const paymentApi = {
   request: (billingPeriod: 'MONTHLY' | 'YEARLY') =>
     apiClient.post<ApiResponse<PaymentRequest>>('/api/payments/request', { billingPeriod }),
 
-  getMyRequests: () =>
-    apiClient.get<ApiResponse<PaymentRequest[]>>('/api/payments/my-requests'),
+  getMyRequests: (page: number, size: number, months?: number) =>
+    apiClient.get<ApiResponse<PageResponse<PaymentRequest>>>('/api/payments/my-requests', {
+      params: { page, size, months: months ?? 12 },
+    }),
 };
 
 // ─── Saving Goals ─────────────────────────────────────────────────────────────

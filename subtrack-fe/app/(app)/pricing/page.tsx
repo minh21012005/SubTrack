@@ -285,14 +285,15 @@ export default function PricingPage() {
   const qc = useQueryClient();
   const [submittedPeriod, setSubmittedPeriod] = useState<BillingPeriod | null>(null);
 
-  const { data: myRequests } = useQuery({
+  const { data: myRequestsPage } = useQuery({
     queryKey: ['my-payment-requests'],
-    queryFn: () => paymentApi.getMyRequests().then((r) => r.data.data),
+    queryFn: () => paymentApi.getMyRequests(0, 40, 12).then((r) => r.data.data),
     enabled: user?.planType === 'FREE',
   });
 
-  const pendingRequest = myRequests?.find((r) => r.status === 'PENDING');
-  const rejectedRequest = myRequests?.find((r) => r.status === 'REJECTED');
+  const myRequests = myRequestsPage?.content ?? [];
+  const pendingRequest = myRequests.find((r) => r.status === 'PENDING');
+  const rejectedRequest = myRequests.find((r) => r.status === 'REJECTED');
 
   const { mutate: submitRequest, isPending } = useMutation({
     mutationFn: (billingPeriod: BillingPeriod) => paymentApi.request(billingPeriod),

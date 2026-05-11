@@ -1,5 +1,6 @@
 package com.subtrack.service;
 
+import com.subtrack.dto.response.PageResponse;
 import com.subtrack.dto.response.NotificationResponse;
 import com.subtrack.entity.Notification;
 import com.subtrack.entity.Subscription;
@@ -9,15 +10,17 @@ import com.subtrack.enums.NotificationType;
 import com.subtrack.exception.NotFoundException;
 import com.subtrack.repository.NotificationRepository;
 import com.subtrack.repository.UserRepository;
+import com.subtrack.util.PaginationUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.OffsetDateTime;
-import java.util.List;
+import java.time.temporal.ChronoUnit;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -28,11 +31,18 @@ public class NotificationService {
     private final UserRepository userRepository;
     private final EmailService emailService;
 
-    public List<NotificationResponse> getUserNotifications(String email) {
+    /**
+     * Recent notifications only ({@code months}) to keep payloads small; older rows stay in DB for compliance/backups.
+     */
+    @Transactional(readOnly = true)
+    public PageResponse<NotificationResponse> getUserNotificationsPage(String email, int page, int size, int months) {
         User user = getUser(email);
-        return notificationRepository.findByUserIdOrderByCreatedAtDesc(user.getId()).stream()
-                .map(this::toResponse)
-                .collect(Collectors.toList());
+        OffsetDateTime since = OffsetDateTime.now().minus(months, ChronoUnit.MONTHS);
+        Page<Notification> result = notificationRepository.findForUserSince(
+                user.getId(),
+                since,
+                PaginationUtil.page(page, size, Sort.by(Sort.Direction.DESC, "createdAt")));
+        return PageResponse.from(result, this::toResponse);
     }
 
     public long getUnreadCount(String email) {

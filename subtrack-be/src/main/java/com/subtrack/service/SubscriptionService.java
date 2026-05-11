@@ -3,6 +3,8 @@ package com.subtrack.service;
 import com.subtrack.dto.request.AddSubscriptionRequest;
 import com.subtrack.dto.request.SubscriptionActionRequest;
 import com.subtrack.dto.request.UpdateSubscriptionRequest;
+import com.subtrack.dto.internal.SubscriptionDuplicateProbe;
+import com.subtrack.dto.response.PageResponse;
 import com.subtrack.dto.response.SubscriptionResponse;
 import com.subtrack.entity.*;
 import com.subtrack.enums.ActionStatus;
@@ -13,15 +15,22 @@ import com.subtrack.exception.BadRequestException;
 import com.subtrack.exception.ForbiddenException;
 import com.subtrack.exception.NotFoundException;
 import com.subtrack.repository.*;
+import com.subtrack.repository.spec.SubscriptionSpecifications;
+import com.subtrack.util.PaginationUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
@@ -47,6 +56,44 @@ public class SubscriptionService {
         return subs.stream()
                 .map(s -> toResponse(s, duplicateIds, duplicateCategories))
                 .collect(Collectors.toList());
+    }
+
+    /**
+     * Paginated list with server-side filter/search. Duplicate flags use a lightweight probe query over all rows
+     * (small payload) while only one page of full entities is hydrated with preset.
+     */
+    @Transactional(readOnly = true)
+    public PageResponse<SubscriptionResponse> getUserSubscriptionsPage(
+            String email, int page, int size, String filter, String search) {
+        User user = getUser(email);
+        List<SubscriptionDuplicateProbe> probes = subscriptionRepository.findDuplicateProbesByUserId(user.getId());
+        java.util.Set<java.util.UUID> duplicateIds = wasteEngine.findDuplicateSubscriptionIdsFromProbes(probes);
+        List<String> duplicateCategories = wasteEngine.findDuplicateCategoriesFromProbes(probes);
+
+        Specification<Subscription> spec = SubscriptionSpecifications.forUserSubscriptions(
+                user.getId(), search, filter);
+        Page<Subscription> slice = subscriptionRepository.findAll(spec,
+                PaginationUtil.page(page, size, Sort.by("nextBillingDate").ascending()));
+
+        List<UUID> ids = slice.getContent().stream().map(Subscription::getId).toList();
+        Map<UUID, Subscription> withPreset = subscriptionRepository.findAllWithPresetByIdIn(ids)
+                .stream()
+                .collect(Collectors.toMap(Subscription::getId, Function.identity()));
+
+        List<SubscriptionResponse> content = slice.getContent().stream()
+                .map(s -> withPreset.getOrDefault(s.getId(), s))
+                .map(s -> toResponse(s, duplicateIds, duplicateCategories))
+                .collect(Collectors.toList());
+
+        return PageResponse.<SubscriptionResponse>builder()
+                .content(content)
+                .page(slice.getNumber())
+                .size(slice.getSize())
+                .totalElements(slice.getTotalElements())
+                .totalPages(slice.getTotalPages())
+                .first(slice.isFirst())
+                .last(slice.isLast())
+                .build();
     }
 
     @Transactional

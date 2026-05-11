@@ -4,6 +4,7 @@ import com.subtrack.dto.request.AddSubscriptionRequest;
 import com.subtrack.dto.request.SubscriptionActionRequest;
 import com.subtrack.dto.request.UpdateSubscriptionRequest;
 import com.subtrack.dto.response.ApiResponse;
+import com.subtrack.dto.response.PageResponse;
 import com.subtrack.dto.response.SubscriptionResponse;
 import com.subtrack.service.SubscriptionService;
 import jakarta.validation.Valid;
@@ -14,7 +15,6 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -25,9 +25,14 @@ public class SubscriptionController {
     private final SubscriptionService subscriptionService;
 
     @GetMapping
-    public ResponseEntity<ApiResponse<List<SubscriptionResponse>>> getAll(
-            @AuthenticationPrincipal UserDetails userDetails) {
-        List<SubscriptionResponse> subs = subscriptionService.getUserSubscriptions(userDetails.getUsername());
+    public ResponseEntity<ApiResponse<PageResponse<SubscriptionResponse>>> getAll(
+            @AuthenticationPrincipal UserDetails userDetails,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "12") int size,
+            @RequestParam(defaultValue = "all") String filter,
+            @RequestParam(required = false) String search) {
+        PageResponse<SubscriptionResponse> subs = subscriptionService.getUserSubscriptionsPage(
+                userDetails.getUsername(), page, size, filter, search);
         return ResponseEntity.ok(ApiResponse.ok(subs));
     }
 

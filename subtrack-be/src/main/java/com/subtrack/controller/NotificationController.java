@@ -2,6 +2,7 @@ package com.subtrack.controller;
 
 import com.subtrack.dto.response.ApiResponse;
 import com.subtrack.dto.response.NotificationResponse;
+import com.subtrack.dto.response.PageResponse;
 import com.subtrack.service.NotificationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -9,7 +10,6 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -20,10 +20,17 @@ public class NotificationController {
 
     private final NotificationService notificationService;
 
+    /**
+     * Recent notifications only; {@code months} avoids loading very old rows (default 12 months).
+     */
     @GetMapping
-    public ResponseEntity<ApiResponse<List<NotificationResponse>>> getAll(
-            @AuthenticationPrincipal UserDetails userDetails) {
-        List<NotificationResponse> notifs = notificationService.getUserNotifications(userDetails.getUsername());
+    public ResponseEntity<ApiResponse<PageResponse<NotificationResponse>>> getAll(
+            @AuthenticationPrincipal UserDetails userDetails,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "15") int size,
+            @RequestParam(defaultValue = "12") int months) {
+        PageResponse<NotificationResponse> notifs = notificationService.getUserNotificationsPage(
+                userDetails.getUsername(), page, size, months);
         return ResponseEntity.ok(ApiResponse.ok(notifs));
     }
 

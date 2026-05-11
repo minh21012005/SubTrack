@@ -1,7 +1,9 @@
 package com.subtrack.controller;
 
+import com.subtrack.dto.response.AdminSummaryDTO;
 import com.subtrack.dto.response.AdminUserDTO;
 import com.subtrack.dto.response.ApiResponse;
+import com.subtrack.dto.response.PageResponse;
 import com.subtrack.dto.response.PaymentRequestDTO;
 import com.subtrack.service.AdminService;
 import com.subtrack.service.PaymentService;
@@ -12,7 +14,6 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.OffsetDateTime;
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/admin")
@@ -22,22 +23,35 @@ public class AdminController {
     private final AdminService adminService;
     private final PaymentService paymentService;
 
-    @GetMapping("/users")
-    public ResponseEntity<ApiResponse<List<AdminUserDTO>>> getAllUsers() {
-        return ResponseEntity.ok(ApiResponse.<List<AdminUserDTO>>builder()
-                .success(true)
-                .data(adminService.getAllUsers())
-                .timestamp(OffsetDateTime.now())
-                .build());
+    @GetMapping("/summary")
+    public ResponseEntity<ApiResponse<AdminSummaryDTO>> getSummary() {
+        return ResponseEntity.ok(ApiResponse.ok(adminService.getSummary()));
     }
 
-    @GetMapping("/payments")
-    public ResponseEntity<ApiResponse<List<PaymentRequestDTO>>> getAllPayments() {
-        return ResponseEntity.ok(ApiResponse.<List<PaymentRequestDTO>>builder()
-                .success(true)
-                .data(paymentService.getAllRequests())
-                .timestamp(OffsetDateTime.now())
-                .build());
+    @GetMapping("/users")
+    public ResponseEntity<ApiResponse<PageResponse<AdminUserDTO>>> getUsers(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) String search) {
+        return ResponseEntity.ok(ApiResponse.ok(adminService.getUsersPage(search, page, size)));
+    }
+
+    @GetMapping("/payments/pending")
+    public ResponseEntity<ApiResponse<PageResponse<PaymentRequestDTO>>> getPendingPayments(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        return ResponseEntity.ok(ApiResponse.ok(paymentService.getPendingRequestsPage(page, size)));
+    }
+
+    /**
+     * Processed top-up requests (approved/rejected). {@code months} limits how far back we load (default 12 months).
+     */
+    @GetMapping("/payments/history")
+    public ResponseEntity<ApiResponse<PageResponse<PaymentRequestDTO>>> getPaymentHistory(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "15") int size,
+            @RequestParam(defaultValue = "12") int months) {
+        return ResponseEntity.ok(ApiResponse.ok(paymentService.getProcessedHistoryPage(page, size, months)));
     }
 
     @PutMapping("/payments/{id}/approve")

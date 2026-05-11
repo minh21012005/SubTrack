@@ -1,38 +1,54 @@
 package com.subtrack.service;
 
+import com.subtrack.dto.response.AdminSummaryDTO;
 import com.subtrack.dto.response.AdminUserDTO;
-import com.subtrack.entity.Subscription;
+import com.subtrack.dto.response.PageResponse;
 import com.subtrack.entity.User;
+import com.subtrack.enums.PlanType;
+import com.subtrack.enums.PaymentRequestStatus;
+import com.subtrack.repository.PaymentRequestRepository;
+import com.subtrack.repository.SubscriptionRepository;
 import com.subtrack.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.subtrack.util.PaginationUtil;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class AdminService {
 
     private final UserRepository userRepository;
+    private final SubscriptionRepository subscriptionRepository;
+    private final PaymentRequestRepository paymentRequestRepository;
 
     @Transactional(readOnly = true)
-    public List<AdminUserDTO> getAllUsers() {
-        List<User> users = userRepository.findAll();
-        
-        return users.stream().map(user -> {
-            long activeCount = user.getSubscriptions().stream()
-                    .filter(s -> !s.isCancelled())
-                    .count();
-            
-            BigDecimal monthlySpend = user.getSubscriptions().stream()
-                    .filter(s -> !s.isCancelled())
-                    .map(this::calculateMonthlyCost)
-                    .reduce(BigDecimal.ZERO, BigDecimal::add);
-                    
+    public AdminSummaryDTO getSummary() {
+        return AdminSummaryDTO.builder()
+                .totalUsers(userRepository.count())
+                .premiumUsers(userRepository.countByPlanType(PlanType.PREMIUM))
+                .totalActiveSubscriptions(subscriptionRepository.countByCancelledFalse())
+                .pendingPaymentRequests(paymentRequestRepository.countByStatus(PaymentRequestStatus.PENDING))
+                .build();
+    }
+
+    @Transactional(readOnly = true)
+    public PageResponse<AdminUserDTO> getUsersPage(String search, int page, int size) {
+        Specification<User> spec = userSearchSpec(search);
+        Page<User> userPage = userRepository.findAll(spec,
+                PaginationUtil.page(page, size, Sort.by(Sort.Direction.DESC, "createdAt")));
+
+        Page<AdminUserDTO> mapped = userPage.map(user -> {
+            long activeCount = subscriptionRepository.countByUserIdAndCancelledFalse(user.getId());
+            BigDecimal monthlySpend = subscriptionRepository.sumMonthlyEquivalentByUserId(user.getId());
+            if (monthlySpend == null) {
+                monthlySpend = BigDecimal.ZERO;
+            }
             return AdminUserDTO.builder()
                     .id(user.getId())
                     .email(user.getEmail())
@@ -43,16 +59,21 @@ public class AdminService {
                     .totalMonthlySpend(monthlySpend)
                     .createdAt(user.getCreatedAt())
                     .build();
-        }).collect(Collectors.toList());
+        });
+
+        return PageResponse.from(mapped);
     }
 
-    private BigDecimal calculateMonthlyCost(Subscription sub) {
-        if (sub.getPrice() == null) return BigDecimal.ZERO;
-        return switch (sub.getBillingCycle()) {
-            case WEEKLY -> sub.getPrice().multiply(BigDecimal.valueOf(4.33)).setScale(0, RoundingMode.HALF_UP);
-            case MONTHLY -> sub.getPrice();
-            case QUARTERLY -> sub.getPrice().divide(BigDecimal.valueOf(3), 0, RoundingMode.HALF_UP);
-            case YEARLY -> sub.getPrice().divide(BigDecimal.valueOf(12), 0, RoundingMode.HALF_UP);
+    private static Specification<User> userSearchSpec(String search) {
+        return (root, query, cb) -> {
+            if (search == null || search.isBlank()) {
+                return cb.conjunction();
+            }
+            String p = "%" + search.trim().toLowerCase() + "%";
+            return cb.or(
+                    cb.like(cb.lower(root.get("email")), p),
+                    cb.like(cb.lower(root.get("name")), p)
+            );
         };
     }
 }

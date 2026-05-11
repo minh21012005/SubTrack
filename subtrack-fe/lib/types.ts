@@ -154,8 +154,24 @@ export interface Preset {
   vnService: boolean;
 }
 
+// ─── Pagination (API) ───────────────────────────────────────────────────────
+export interface PageResponse<T> {
+  content: T[];
+  page: number;
+  size: number;
+  totalElements: number;
+  totalPages: number;
+  first: boolean;
+  last: boolean;
+}
+
 // ─── Notifications ────────────────────────────────────────────────────────────
-export type NotificationType = 'RENEWAL_REMINDER' | 'WASTE_ALERT' | 'GENERAL';
+export type NotificationType =
+  | 'RENEWAL_REMINDER'
+  | 'WASTE_ALERT'
+  | 'GENERAL'
+  | 'PAYMENT_APPROVED'
+  | 'PAYMENT_REJECTED';
 export type NotificationStatus = 'UNREAD' | 'READ';
 
 export interface Notification {
@@ -169,6 +185,13 @@ export interface Notification {
 }
 
 // ─── Admin ─────────────────────────────────────────────────────────────
+export interface AdminSummary {
+  totalUsers: number;
+  premiumUsers: number;
+  totalActiveSubscriptions: number;
+  pendingPaymentRequests: number;
+}
+
 export interface AdminUser {
   id: string;
   email: string;

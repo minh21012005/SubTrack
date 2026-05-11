@@ -29,23 +29,20 @@ export default function NotificationBell() {
   });
 
   // Recent notifications — fetch when dropdown opens
-  const { data: notifications } = useQuery({
+  const { data: previewPage } = useQuery({
     queryKey: ['notifications-preview'],
-    queryFn: () => notificationApi.getAll().then(r => r.data.data.slice(0, 6)),
+    queryFn: () => notificationApi.getPage(0, 6, 12).then((r) => r.data.data),
     enabled: open,
   });
+
+  const notifications = previewPage?.content ?? [];
 
   const { mutate: markAllRead } = useMutation({
     mutationFn: () => notificationApi.markAllRead(),
     onMutate: () => {
-      // Optimistic upate
       qc.setQueryData(['notification-count'], { count: 0 });
-      // Optimistic update for notifications list to mark all as read
-      qc.setQueryData(['notifications-preview'], (old: Notification[] | undefined) => 
-        old ? old.map(n => ({ ...n, status: 'READ' })) : []
-      );
-      qc.setQueryData(['notifications'], (old: Notification[] | undefined) => 
-        old ? old.map(n => ({ ...n, status: 'READ' })) : []
+      qc.setQueryData(['notifications-preview'], (old: { content: Notification[] } | undefined) =>
+        old ? { ...old, content: old.content.map((n) => ({ ...n, status: 'READ' as const })) } : old
       );
     },
     onSuccess: () => {

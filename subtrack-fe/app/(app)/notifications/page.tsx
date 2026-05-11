@@ -1,11 +1,16 @@
 'use client';
 
+import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import { notificationApi } from '@/lib/services';
 import { Bell, CheckCheck, Clock, AlarmClock, AlertTriangle, Megaphone, Trash2, CheckCircle2, Star, X } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { vi } from 'date-fns/locale';
+import Pagination from '@/components/ui/Pagination';
+
+const PAGE_SIZE = 15;
+const NOTIF_MONTHS = 12;
 
 const TYPE_CONFIG: Record<string, { icon: React.ReactNode; color: string; bg: string }> = {
   RENEWAL_REMINDER: { icon: <Clock size={16} />, color: '#D97706', bg: '#FEF3C7' },
@@ -17,20 +22,37 @@ const TYPE_CONFIG: Record<string, { icon: React.ReactNode; color: string; bg: st
 
 export default function NotificationsPage() {
   const queryClient = useQueryClient();
+  const [page, setPage] = useState(0);
 
-  const { data: notifs = [], isLoading } = useQuery({
-    queryKey: ['notifications'],
-    queryFn: () => notificationApi.getAll().then((r) => r.data.data),
+  const { data: countData } = useQuery({
+    queryKey: ['notification-count'],
+    queryFn: () => notificationApi.getUnreadCount().then((r) => r.data.data),
   });
+
+  const { data: notifPage, isLoading } = useQuery({
+    queryKey: ['notifications', page],
+    queryFn: () => notificationApi.getPage(page, PAGE_SIZE, NOTIF_MONTHS).then((r) => r.data.data),
+  });
+
+  const notifs = notifPage?.content ?? [];
+  const unreadTotal = countData?.count ?? 0;
 
   const markAllMutation = useMutation({
     mutationFn: () => notificationApi.markAllRead(),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['notifications'] }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['notifications'] });
+      queryClient.invalidateQueries({ queryKey: ['notification-count'] });
+      queryClient.invalidateQueries({ queryKey: ['notifications-preview'] });
+    },
   });
 
   const markOneMutation = useMutation({
     mutationFn: (id: string) => notificationApi.markRead(id),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['notifications'] }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['notifications'] });
+      queryClient.invalidateQueries({ queryKey: ['notification-count'] });
+      queryClient.invalidateQueries({ queryKey: ['notifications-preview'] });
+    },
   });
 
   const deleteMutation = useMutation({
@@ -38,34 +60,40 @@ export default function NotificationsPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['notifications'] });
       queryClient.invalidateQueries({ queryKey: ['notification-count'] });
+      queryClient.invalidateQueries({ queryKey: ['notifications-preview'] });
     },
   });
 
-  const unread = notifs.filter((n) => n.status === 'UNREAD').length;
-
   return (
     <div>
-      <div className="page-header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+      <div className="page-header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
         <div>
-          <h1 className="page-title" style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <h1 className="page-title" style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
             <Bell size={24} /> Thông báo
-            {unread > 0 && (
+            {unreadTotal > 0 && (
               <span style={{
                 background: 'var(--accent-red)', color: 'white',
                 borderRadius: 'var(--radius-full)', padding: '2px 10px',
                 fontSize: '0.8rem', fontWeight: 700,
-              }}>{unread}</span>
+              }}>{unreadTotal}</span>
             )}
           </h1>
-          <p className="page-subtitle">{notifs.length} thông báo · {unread} chưa đọc</p>
+          <p className="page-subtitle">
+            {notifPage?.totalElements ?? 0} thông báo trong {NOTIF_MONTHS} tháng gần nhất
+            {unreadTotal > 0 ? ` · ${unreadTotal} chưa đọc (toàn hệ thống)` : ''}
+          </p>
         </div>
-        {unread > 0 && (
+        {unreadTotal > 0 && (
           <button className="btn btn-outline btn-sm" onClick={() => markAllMutation.mutate()}
             disabled={markAllMutation.isPending}>
             <CheckCheck size={14} /> Đánh dấu tất cả đã đọc
           </button>
         )}
       </div>
+
+      <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)', marginBottom: 16 }}>
+        Thông báo cũ hơn {NOTIF_MONTHS} tháng không được tải xuống trình duyệt để giữ giao diện mượt; dữ liệu vẫn có thể được lưu trên máy chủ.
+      </p>
 
       {isLoading ? (
         <div style={{ display: 'flex', justifyContent: 'center', padding: '64px' }}>
@@ -74,60 +102,65 @@ export default function NotificationsPage() {
       ) : notifs.length === 0 ? (
         <div className="empty-state">
           <div className="empty-state-icon"><Bell size={48} strokeWidth={1.5} color="var(--text-muted)" /></div>
-          <p style={{ fontWeight: 600 }}>Chưa có thông báo nào</p>
-          <p style={{ fontSize: '0.875rem' }}>Các thông báo gia hạn sẽ xuất hiện ở đây</p>
+          <p style={{ fontWeight: 600 }}>Không có thông báo trong khoảng thời gian này</p>
+          <p style={{ fontSize: '0.875rem' }}>Các nhắc gia hạn và cảnh báo lãng phí sẽ xuất hiện ở đây</p>
         </div>
       ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-          {notifs.map((notif, i) => (
-            <motion.div
-              key={notif.id}
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.04 }}
-              onClick={() => notif.status === 'UNREAD' && markOneMutation.mutate(notif.id)}
-              style={{
-                background: notif.status === 'UNREAD' ? 'var(--primary-light)' : 'var(--bg-card)',
-                border: `1px solid ${notif.status === 'UNREAD' ? 'var(--primary)' : 'var(--border)'}`,
-                borderRadius: 'var(--radius-md)',
-                padding: '14px 18px',
-                cursor: notif.status === 'UNREAD' ? 'pointer' : 'default',
-                display: 'flex', gap: 14, alignItems: 'flex-start',
-                transition: 'var(--transition)',
-              }}
-            >
-              <div style={{ flexShrink: 0, marginTop: 2, padding: 8, background: (TYPE_CONFIG[notif.type] || TYPE_CONFIG.GENERAL).bg, color: (TYPE_CONFIG[notif.type] || TYPE_CONFIG.GENERAL).color, borderRadius: 8, border: '1px solid var(--border-light)' }}>
-                {(TYPE_CONFIG[notif.type] || TYPE_CONFIG.GENERAL).icon}
-              </div>
-              <div style={{ flex: 1 }}>
-                <p style={{ fontSize: '0.9rem', color: 'var(--text-primary)', lineHeight: 1.5, fontWeight: notif.status === 'UNREAD' ? 600 : 400 }}>
-                  {notif.message}
-                </p>
-                {notif.subscriptionName && (
-                  <span className="badge badge-purple" style={{ marginTop: 6 }}>{notif.subscriptionName}</span>
-                )}
-                <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginTop: 6, color: 'var(--text-muted)', fontSize: '0.78rem' }}>
-                  <Clock size={11} />
-                  {formatDistanceToNow(new Date(notif.createdAt), { addSuffix: true, locale: vi })}
+        <>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {notifs.map((notif, i) => (
+              <motion.div
+                key={notif.id}
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.04 }}
+                onClick={() => notif.status === 'UNREAD' && markOneMutation.mutate(notif.id)}
+                style={{
+                  background: notif.status === 'UNREAD' ? 'var(--primary-light)' : 'var(--bg-card)',
+                  border: `1px solid ${notif.status === 'UNREAD' ? 'var(--primary)' : 'var(--border)'}`,
+                  borderRadius: 'var(--radius-md)',
+                  padding: '14px 18px',
+                  cursor: notif.status === 'UNREAD' ? 'pointer' : 'default',
+                  display: 'flex', gap: 14, alignItems: 'flex-start',
+                  transition: 'var(--transition)',
+                }}
+              >
+                <div style={{ flexShrink: 0, marginTop: 2, padding: 8, background: (TYPE_CONFIG[notif.type] || TYPE_CONFIG.GENERAL).bg, color: (TYPE_CONFIG[notif.type] || TYPE_CONFIG.GENERAL).color, borderRadius: 8, border: '1px solid var(--border-light)' }}>
+                  {(TYPE_CONFIG[notif.type] || TYPE_CONFIG.GENERAL).icon}
                 </div>
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                {notif.status === 'UNREAD' && (
-                  <div style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--primary)', flexShrink: 0, marginTop: 6 }} />
-                )}
-                <button 
-                  onClick={(e) => { e.stopPropagation(); deleteMutation.mutate(notif.id); }}
-                  style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4, color: 'var(--text-muted)' }}
-                  aria-label="Xóa thông báo"
-                  title="Xóa thông báo"
-                  disabled={deleteMutation.isPending}
-                >
-                  <Trash2 size={16} />
-                </button>
-              </div>
-            </motion.div>
-          ))}
-        </div>
+                <div style={{ flex: 1 }}>
+                  <p style={{ fontSize: '0.9rem', color: 'var(--text-primary)', lineHeight: 1.5, fontWeight: notif.status === 'UNREAD' ? 600 : 400 }}>
+                    {notif.message}
+                  </p>
+                  {notif.subscriptionName && (
+                    <span className="badge badge-purple" style={{ marginTop: 6 }}>{notif.subscriptionName}</span>
+                  )}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginTop: 6, color: 'var(--text-muted)', fontSize: '0.78rem' }}>
+                    <Clock size={11} />
+                    {formatDistanceToNow(new Date(notif.createdAt), { addSuffix: true, locale: vi })}
+                  </div>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                  {notif.status === 'UNREAD' && (
+                    <div style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--primary)', flexShrink: 0, marginTop: 6 }} />
+                  )}
+                  <button
+                    onClick={(e) => { e.stopPropagation(); deleteMutation.mutate(notif.id); }}
+                    style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4, color: 'var(--text-muted)' }}
+                    aria-label="Xóa thông báo"
+                    title="Xóa thông báo"
+                    disabled={deleteMutation.isPending}
+                  >
+                    <Trash2 size={16} />
+                  </button>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+          {notifPage && notifPage.totalPages > 1 && (
+            <Pagination page={page} totalPages={notifPage.totalPages} onPageChange={setPage} />
+          )}
+        </>
       )}
     </div>
   );
