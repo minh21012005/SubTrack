@@ -55,6 +55,15 @@ server:
     include-message: always
     include-binding-errors: always
 
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: when_authorized
+
 logging:
   level:
     com.subtrack: DEBUG

@@ -241,7 +241,7 @@ export default function LandingPage() {
                   }}
                 >
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, marginBottom: 8 }}>
-                    <div style={{ fontWeight: 700, fontSize: '0.92rem', color: 'var(--text-primary)' }}>{item.title}</div>
+                    <h3 style={{ fontWeight: 700, fontSize: '0.92rem', color: 'var(--text-primary)', margin: 0 }}>{item.title}</h3>
                     <span style={{
                       flexShrink: 0,
                       fontSize: '0.65rem', fontWeight: 700,
@@ -340,7 +340,7 @@ export default function LandingPage() {
       {/* ── Footer ── */}
       <footer style={{ padding: '40px', textAlign: 'center', borderTop: '1px solid rgba(0,0,0,0.05)', color: 'var(--text-muted)', fontSize: '0.9rem' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, marginBottom: 12 }}>
-          <img src="/image.jpg" alt="Logo" width={20} height={20} style={{ borderRadius: 4, objectFit: 'cover' }} />
+          <img src="/image.jpg" alt="SubTrack Logo" width={20} height={20} style={{ borderRadius: 4, objectFit: 'cover' }} />
           <span style={{ fontWeight: 700, color: 'var(--text-primary)' }}>SubTrack</span>
         </div>
         <p>© 2026 SubTrack - Dừng lãng phí tiền bạc của bạn.</p>
