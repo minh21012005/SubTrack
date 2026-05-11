@@ -4,6 +4,7 @@ import Providers from '@/components/Providers';
 import { Toaster } from 'react-hot-toast';
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://subtrack.click'),
   title: {
     default: 'SubTrack – Phát hiện lãng phí subscription & Tiết kiệm chi phí',
     template: '%s | SubTrack'
@@ -14,18 +15,22 @@ export const metadata: Metadata = {
     'quản lý tài chính cá nhân', 'theo dõi gói cước', 'hủy subscription', 
     'tiết kiệm tiền', 'chi phí định kỳ'
   ],
+  icons: {
+    icon: '/image.jpg',
+    apple: '/image.jpg',
+  },
   authors: [{ name: 'SubTrack Team' }],
   creator: 'SubTrack Team',
   openGraph: {
     type: 'website',
     locale: 'vi_VN',
-    url: 'https://subtrack.vn',
+    url: 'https://subtrack.click',
     title: 'SubTrack – Dừng lãng phí tiền cho các Subscription không dùng tới',
     description: 'Bạn đang mất bao nhiêu tiền mỗi tháng? SubTrack giúp bạn tìm ra và cắt giảm các chi phí đăng ký lãng phí ngay lập tức.',
     siteName: 'SubTrack',
     images: [
       {
-        url: 'https://subtrack.vn/og-image.jpg',
+        url: '/image.jpg',
         width: 1200,
         height: 630,
         alt: 'SubTrack - Quản lý Subscription thông minh',
@@ -36,7 +41,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'SubTrack – Quản lý & Tiết kiệm chi phí Subscription',
     description: 'Phát hiện lãng phí và quản lý chi tiêu định kỳ thông minh hơn cùng SubTrack.',
-    images: ['https://subtrack.vn/og-image.jpg'],
+    images: ['/image.jpg'],
   },
   robots: {
     index: true,

@@ -5,4 +5,4 @@ Disallow: /settings
 Disallow: /billing
 Disallow: /dashboard
 
-Sitemap: https://subtrack.vn/sitemap.xml
+Sitemap: https://subtrack.click/sitemap.xml
