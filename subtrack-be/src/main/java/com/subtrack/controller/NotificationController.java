@@ -4,11 +4,14 @@ import com.subtrack.dto.response.ApiResponse;
 import com.subtrack.dto.response.NotificationResponse;
 import com.subtrack.dto.response.PageResponse;
 import com.subtrack.service.NotificationService;
+import com.subtrack.service.SseService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.util.Map;
 import java.util.UUID;
@@ -19,6 +22,12 @@ import java.util.UUID;
 public class NotificationController {
 
     private final NotificationService notificationService;
+    private final SseService sseService;
+
+    @GetMapping(value = "/subscribe", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    public SseEmitter subscribe(@AuthenticationPrincipal UserDetails userDetails) {
+        return sseService.subscribe(userDetails.getUsername());
+    }
 
     /**
      * Recent notifications only; {@code months} avoids loading very old rows (default 12 months).

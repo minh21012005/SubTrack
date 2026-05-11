@@ -12,6 +12,7 @@ interface AuthContextType {
   isInitializing: boolean;
   logout: () => Promise<void>;
   updateUser: (user: User) => void;
+  refreshUser: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -20,6 +21,20 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isInitializing, setIsInitializing] = useState(true);
   const router = useRouter();
+
+  const refreshUser = async () => {
+    const token = getToken();
+    if (!token) return;
+    
+    try {
+      const res = await authApi.me();
+      const freshUser = res.data.data;
+      setUser(freshUser);
+      localStorage.setItem('subtrack_user', JSON.stringify(freshUser));
+    } catch (err) {
+      console.error('Failed to refresh user state', err);
+    }
+  };
 
   useEffect(() => {
     const storedUser = localStorage.getItem('subtrack_user');
@@ -37,13 +52,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     // 2. Always sync with backend to get latest plan/role status
     if (token || storedUser) {
-      authApi.me().then(res => {
-        const freshUser = res.data.data;
-        setUser(freshUser);
-        localStorage.setItem('subtrack_user', JSON.stringify(freshUser));
-      }).catch(err => {
-        console.error('Failed to sync user state', err);
-      }).finally(() => {
+      refreshUser().finally(() => {
         setIsInitializing(false);
       });
     } else {
@@ -71,7 +80,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, isLoggedIn: !!user, isInitializing, logout, updateUser }}>
+    <AuthContext.Provider value={{ user, isLoggedIn: !!user, isInitializing, logout, updateUser, refreshUser }}>
       {children}
     </AuthContext.Provider>
   );

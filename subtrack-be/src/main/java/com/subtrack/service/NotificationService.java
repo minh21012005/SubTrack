@@ -20,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.OffsetDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.Map;
 import java.util.UUID;
 
 @Slf4j
@@ -30,6 +31,7 @@ public class NotificationService {
     private final NotificationRepository notificationRepository;
     private final UserRepository userRepository;
     private final EmailService emailService;
+    private final SseService sseService;
 
     /**
      * Recent notifications only ({@code months}) to keep payloads small; older rows stay in DB for compliance/backups.
@@ -128,6 +130,9 @@ public class NotificationService {
         notificationRepository.save(notification);
         log.info("Created {} pattern for user {} subscription {}", type, user.getEmail(), subscription.getName());
 
+        // Push SSE notification
+        sseService.sendEvent(user.getEmail(), "notification", toResponse(notification));
+
         // Send email asynchronously
         org.thymeleaf.context.Context context = new org.thymeleaf.context.Context();
         context.setVariable("userName", user.getName() != null ? user.getName() : "bạn");
@@ -178,6 +183,15 @@ public class NotificationService {
         notificationRepository.save(notification);
         log.info("Created payment {} notification for user {}", approved ? "APPROVED" : "REJECTED", user.getEmail());
 
+        // Push SSE notification
+        sseService.sendEvent(user.getEmail(), "notification", toResponse(notification));
+        
+        // If approved/rejected, also send a plan update event so UI can refresh profile
+        sseService.sendEvent(user.getEmail(), "PLAN_UPDATED", Map.of(
+            "approved", approved,
+            "billingPeriod", billingPeriod
+        ));
+
         // Send email asynchronously
         org.thymeleaf.context.Context context = new org.thymeleaf.context.Context();
         context.setVariable("userName", user.getName() != null ? user.getName() : "bạn");
@@ -200,6 +214,10 @@ public class NotificationService {
                 .build();
         notificationRepository.save(notification);
         log.info("Created plan expired notification for user {}", user.getEmail());
+
+        // Push SSE notification
+        sseService.sendEvent(user.getEmail(), "notification", toResponse(notification));
+        sseService.sendEvent(user.getEmail(), "PLAN_UPDATED", Map.of("expired", true));
 
         org.thymeleaf.context.Context context = new org.thymeleaf.context.Context();
         context.setVariable("userName", user.getName() != null ? user.getName() : "bạn");
