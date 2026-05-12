@@ -16,7 +16,7 @@ public class SseService {
     private final Map<String, SseEmitter> emitters = new ConcurrentHashMap<>();
 
     public SseEmitter subscribe(String email) {
-        SseEmitter emitter = new SseEmitter(Long.MAX_VALUE); // Long timeout for real-time
+        SseEmitter emitter = new SseEmitter(120_000L); // 2 minutes timeout
         
         emitter.onCompletion(() -> emitters.remove(email));
         emitter.onTimeout(() -> emitters.remove(email));
